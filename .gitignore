@@ -1,0 +1,63 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Object files
+*.o
+*.obj
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# IDE/Editor files
+.vscode/
+.vs/
+.idea/
+*.user
+*.suo
+*.sln
+*.vcxproj
+*.vcxproj.filters
+
+# External dependencies (should be downloaded separately)
+extern/
+!extern/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test outputs
+tests/output/
+*.test
+
+# Docs
+docs/
+docs/*.md
+
+# Assets (optional - uncomment if you want to ignore large media files)
+# assets/samples/*.mp4
+# assets/samples/*.mkv
+# assets/samples/*.avi

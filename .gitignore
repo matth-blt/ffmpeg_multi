@@ -57,6 +57,8 @@ tests/output/
 docs/
 docs/*.md
 
+presets/
+presets/*.json
 # Assets (optional - uncomment if you want to ignore large media files)
 # assets/samples/*.mp4
 # assets/samples/*.mkv

@@ -43,8 +43,10 @@ enum class PixelFormat {
     YUV420P8, // 8-bit 4:2:0
     YUV420P10, // 10-bit 4:2:0
     P010, // 10-bit 4:2:0 (hardware)
+    NV12, // 8-bit 4:2:0 (hardware, NVENC)
     YUV422P10, // 10-bit 4:2:2
-    YUV444P10 // 10-bit 4:4:4
+    YUV444P10, // 10-bit 4:4:4
+    YUVA444P10LE // 10-bit 4:4:4 with alpha
 };
 
 // ============================================================================
@@ -148,6 +150,26 @@ struct EncodeConfig {
     ColorProfile color_profile{}; // Override color profile
     std::optional<MasteringDisplay> mastering_display{};
     std::optional<ContentLightLevel> content_light_level{};
+    
+    // --- ProRes Specific Parameters ---
+    int prores_profile{4}; // ProRes profile (0=Proxy, 1=LT, 2=Standard, 3=HQ, 4=4444, 5=4444XQ)
+    std::string prores_vendor{"apl0"}; // ProRes vendor ID (default: apl0 for Apple)
+    int bits_per_mb{8000}; // Bits per macroblock for ProRes
+    
+    // --- FFV1 Specific Parameters ---
+    int ffv1_coder{2}; // FFV1 coder type (0=Golomb-Rice, 1=Range Coder, 2=Range Coder with custom state transition)
+    int ffv1_context{1}; // FFV1 context model (0=small, 1=large)
+    int ffv1_level{3}; // FFV1 level (1, 3)
+    int ffv1_slices{12}; // Number of slices for FFV1 (more slices = better multithreading)
+    
+    // --- x264 Specific Parameters ---
+    std::string x264_params{}; // x264-params string (e.g., "direct=spatial:me=umh")
+    
+    // --- NVENC Specific Parameters ---
+    int b_adapt{1}; // B-frame adaptive mode (NVENC)
+    int rc_lookahead{30}; // Rate control lookahead (NVENC)
+    int qp_cb_offset{0}; // QP offset for Cb channel (NVENC)
+    int qp_cr_offset{0}; // QP offset for Cr channel (NVENC)
     
     // --- Output Container ---
     std::string container{"mp4"}; // Output container format

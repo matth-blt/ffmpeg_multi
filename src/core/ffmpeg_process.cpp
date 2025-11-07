@@ -15,14 +15,11 @@ std::vector<std::string> ffmpegProcess::getArgs() {
 }
 
 bool ffmpegProcess::execute() {
-    // Construire la commande complète
     std::ostringstream command;
-    // NE PAS mettre de guillemets autour de l'exécutable sous Windows
     command << ExecutablePath.string();
     
     for (const auto& arg : args) {
         command << " ";
-        // Ajouter des guillemets si l'argument contient des espaces
         if (arg.find(' ') != std::string::npos) {
             command << "\"" << arg << "\"";
         } else {
@@ -32,8 +29,7 @@ bool ffmpegProcess::execute() {
     
     std::string cmd = command.str();
     std::cout << "\n[EXECUTE] " << cmd << "\n" << std::endl;
-    
-    // Exécuter la commande
+
     int result = std::system(cmd.c_str());
     
     return result == 0;

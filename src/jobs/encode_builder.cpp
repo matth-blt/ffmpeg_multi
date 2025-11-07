@@ -22,18 +22,18 @@ EncodeJobBuilder& EncodeJobBuilder::output(const std::string& path) {
 // CODEC SHORTCUTS
 // ============================================================================
 
-EncodeJobBuilder& EncodeJobBuilder::h264() {
+EncodeJobBuilder& EncodeJobBuilder::x264() {
     config_.codec = Encode::Codec::X264;
     return *this;
 }
 
-EncodeJobBuilder& EncodeJobBuilder::h265() {
+EncodeJobBuilder& EncodeJobBuilder::x265() {
     config_.codec = Encode::Codec::X265;
     return *this;
 }
 
 EncodeJobBuilder& EncodeJobBuilder::hevc() {
-    return h265(); // Alias
+    return x265(); // Alias
 }
 
 EncodeJobBuilder& EncodeJobBuilder::av1() {
@@ -48,11 +48,22 @@ EncodeJobBuilder& EncodeJobBuilder::svtav1() {
 
 EncodeJobBuilder& EncodeJobBuilder::prores() {
     config_.codec = Encode::Codec::ProRes;
+    // Paramètres par défaut pour ProRes 4444
+    config_.prores_profile = 4;
+    config_.prores_vendor = "apl0";
+    config_.bits_per_mb = 8000;
+    config_.pixel_format = Encode::PixelFormat::YUVA444P10LE;
     return *this;
 }
 
 EncodeJobBuilder& EncodeJobBuilder::ffv1() {
     config_.codec = Encode::Codec::FFV1;
+    // Paramètres par défaut pour FFV1
+    config_.ffv1_coder = 2;
+    config_.ffv1_context = 1;
+    config_.ffv1_level = 3;
+    config_.ffv1_slices = 12;
+    config_.gop_size = 1; // Intra-only pour lossless
     return *this;
 }
 
@@ -153,6 +164,82 @@ EncodeJobBuilder& EncodeJobBuilder::pixelFormat(Encode::PixelFormat fmt) {
 }
 
 // ============================================================================
+// PRORES SPECIFIC PARAMETERS
+// ============================================================================
+
+EncodeJobBuilder& EncodeJobBuilder::proresProfile(int profile) {
+    config_.prores_profile = profile;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::proresVendor(const std::string& vendor) {
+    config_.prores_vendor = vendor;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::proresBitsPerMB(int bits) {
+    config_.bits_per_mb = bits;
+    return *this;
+}
+
+// ============================================================================
+// FFV1 SPECIFIC PARAMETERS
+// ============================================================================
+
+EncodeJobBuilder& EncodeJobBuilder::ffv1Coder(int coder) {
+    config_.ffv1_coder = coder;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::ffv1Context(int context) {
+    config_.ffv1_context = context;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::ffv1Level(int level) {
+    config_.ffv1_level = level;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::ffv1Slices(int slices) {
+    config_.ffv1_slices = slices;
+    return *this;
+}
+
+// ============================================================================
+// X264 SPECIFIC PARAMETERS
+// ============================================================================
+
+EncodeJobBuilder& EncodeJobBuilder::x264Params(const std::string& params) {
+    config_.x264_params = params;
+    return *this;
+}
+
+// ============================================================================
+// NVENC SPECIFIC PARAMETERS
+// ============================================================================
+
+EncodeJobBuilder& EncodeJobBuilder::nvencBAdapt(int value) {
+    config_.b_adapt = value;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::nvencRcLookahead(int frames) {
+    config_.rc_lookahead = frames;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::nvencQpCbOffset(int offset) {
+    config_.qp_cb_offset = offset;
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::nvencQpCrOffset(int offset) {
+    config_.qp_cr_offset = offset;
+    return *this;
+}
+
+// ============================================================================
 // COLOR SPACE PRESETS
 // ============================================================================
 
@@ -209,11 +296,7 @@ EncodeJobBuilder& EncodeJobBuilder::maxCLL(uint16_t max_cll, uint16_t max_fall) 
     return *this;
 }
 
-EncodeJobBuilder& EncodeJobBuilder::masteringDisplay(
-    float rx, float ry, float gx, float gy,
-    float bx, float by, float wx, float wy,
-    float min_lum, float max_lum
-) {
+EncodeJobBuilder& EncodeJobBuilder::masteringDisplay(float rx, float ry, float gx, float gy, float bx, float by, float wx, float wy, float min_lum, float max_lum) {
     Encode::MasteringDisplay md;
     md.red_x = rx; md.red_y = ry;
     md.green_x = gx; md.green_y = gy;
@@ -260,7 +343,7 @@ EncodeJobBuilder& EncodeJobBuilder::audioChannels(int channels) {
 // ============================================================================
 
 EncodeJobBuilder& EncodeJobBuilder::youtubePreset() {
-    h264();
+    x264();
     crf(23);
     preset("medium");
     eightBit();
@@ -269,40 +352,75 @@ EncodeJobBuilder& EncodeJobBuilder::youtubePreset() {
     return *this;
 }
 
-EncodeJobBuilder& EncodeJobBuilder::archivePreset() {
-    h265();
-    crf(18);
+EncodeJobBuilder& EncodeJobBuilder::x264Preset() {
+    x264();
+    crf(16);
     preset("slow");
-    tenBit();
-    gopSize(250);
-    bframes(4);
-    audioCodec("flac");
-    config_.container = "mkv";
-    return *this;
-}
-
-EncodeJobBuilder& EncodeJobBuilder::webPreset() {
-    svtav1();
-    crf(30);
-    preset("5");
-    eightBit();
-    audioCodec("libopus");
-    audioBitrate(128);
-    config_.container = "webm";
-    return *this;
-}
-
-EncodeJobBuilder& EncodeJobBuilder::streamingPreset(int bitrate_kbps) {
-    h264();
-    cbr(bitrate_kbps);
-    preset("veryfast");
-    tune("zerolatency");
-    gopSize(60);
-    bframes(0);
-    eightBit();
-    audioCodec("aac");
-    audioBitrate(128);
+    x264Params("direct=spatial:me=umh");
+    pixelFormat(Encode::PixelFormat::YUV420P8);
+    copyAudio();
     config_.container = "mp4";
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::x265Preset() {
+    x265();
+    crf(18);
+    preset("medium");
+    pixelFormat(Encode::PixelFormat::YUV420P8);
+    copyAudio();
+    config_.container = "mp4";
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::h264NvencPreset() {
+    h264_nvenc();
+    qp(18);
+    preset("p6");
+    nvencBAdapt(1);
+    nvencRcLookahead(30);
+    nvencQpCbOffset(-2);
+    nvencQpCrOffset(-2);
+    pixelFormat(Encode::PixelFormat::NV12);
+    copyAudio();
+    config_.container = "mp4";
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::h265NvencPreset() {
+    h265_nvenc();
+    qp(18);
+    preset("p6");
+    nvencBAdapt(1);
+    nvencRcLookahead(30);
+    nvencQpCbOffset(-2);
+    nvencQpCrOffset(-2);
+    pixelFormat(Encode::PixelFormat::NV12);
+    copyAudio();
+    config_.container = "mp4";
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::proresPreset(int profile) {
+    prores();
+    proresProfile(profile);
+    proresVendor("apl0");
+    proresBitsPerMB(8000);
+    pixelFormat(Encode::PixelFormat::YUVA444P10LE);
+    copyAudio();
+    config_.container = "mov";
+    return *this;
+}
+
+EncodeJobBuilder& EncodeJobBuilder::ffv1Preset() {
+    ffv1();
+    ffv1Coder(2);
+    ffv1Context(1);
+    ffv1Level(3);
+    ffv1Slices(12);
+    gopSize(1);
+    copyAudio();
+    config_.container = "mkv";
     return *this;
 }
 
@@ -339,16 +457,14 @@ void EncodeJobBuilder::validate() const {
     }
     
     // Validation du rate control
-    if (config_.rate_control == Encode::RateControl::VBR || 
-        config_.rate_control == Encode::RateControl::CBR) {
+    if (config_.rate_control == Encode::RateControl::VBR || config_.rate_control == Encode::RateControl::CBR) {
         if (config_.bitrate_kbps <= 0) {
             throw std::runtime_error("Bitrate must be > 0 for VBR/CBR modes");
         }
     }
     
     // Validation du quality pour CRF/CQP
-    if (config_.rate_control == Encode::RateControl::CRF || 
-        config_.rate_control == Encode::RateControl::CQP) {
+    if (config_.rate_control == Encode::RateControl::CRF || config_.rate_control == Encode::RateControl::CQP) {
         if (config_.quality < 0 || config_.quality > 51) {
             throw std::runtime_error("Quality/CRF value must be between 0 and 51");
         }

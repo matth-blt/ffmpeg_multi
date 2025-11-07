@@ -111,6 +111,58 @@ void EncodeJob::addInputArgs(std::vector<std::string>& args) const {
 void EncodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
     args.push_back("-c:v");
     args.push_back(getEncoderName());
+    
+    // Paramètres spécifiques à ProRes
+    if (config_.codec == Encode::Codec::ProRes) {
+        args.push_back("-profile:v");
+        args.push_back(std::to_string(config_.prores_profile));
+        
+        args.push_back("-vendor");
+        args.push_back(config_.prores_vendor);
+        
+        args.push_back("-bits_per_mb");
+        args.push_back(std::to_string(config_.bits_per_mb));
+    }
+    
+    // Paramètres spécifiques à FFV1
+    if (config_.codec == Encode::Codec::FFV1) {
+        args.push_back("-coder");
+        args.push_back(std::to_string(config_.ffv1_coder));
+        
+        args.push_back("-context");
+        args.push_back(std::to_string(config_.ffv1_context));
+        
+        args.push_back("-level");
+        args.push_back(std::to_string(config_.ffv1_level));
+        
+        args.push_back("-slices");
+        args.push_back(std::to_string(config_.ffv1_slices));
+    }
+    
+    // Paramètres spécifiques à x264
+    if (config_.codec == Encode::Codec::X264 && !config_.x264_params.empty()) {
+        args.push_back("-x264-params");
+        args.push_back(config_.x264_params);
+    }
+    
+    // Paramètres spécifiques à NVENC
+    if (config_.codec == Encode::Codec::H264_NVENC || config_.codec == Encode::Codec::H265_NVENC) {
+        args.push_back("-b_adapt");
+        args.push_back(std::to_string(config_.b_adapt));
+        
+        args.push_back("-rc-lookahead");
+        args.push_back(std::to_string(config_.rc_lookahead));
+        
+        if (config_.qp_cb_offset != 0) {
+            args.push_back("-qp_cb_offset");
+            args.push_back(std::to_string(config_.qp_cb_offset));
+        }
+        
+        if (config_.qp_cr_offset != 0) {
+            args.push_back("-qp_cr_offset");
+            args.push_back(std::to_string(config_.qp_cr_offset));
+        }
+    }
 }
 
 // ============================================================================
@@ -331,10 +383,14 @@ std::string EncodeJob::getPixelFormatString() const {
             return "yuv420p10le";
         case Encode::PixelFormat::P010:
             return "p010le";
+        case Encode::PixelFormat::NV12:
+            return "nv12";
         case Encode::PixelFormat::YUV422P10:
             return "yuv422p10le";
         case Encode::PixelFormat::YUV444P10:
             return "yuv444p10le";
+        case Encode::PixelFormat::YUVA444P10LE:
+            return "yuva444p10le";
         default:
             return "yuv420p";
     }

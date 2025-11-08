@@ -12,4 +12,4 @@ std::filesystem::path getExternPath();
 } // namespace PathUtils
 } // namespace FFmpegMulti
 
-#endif // PATH_UTILS_HPP
+#endif

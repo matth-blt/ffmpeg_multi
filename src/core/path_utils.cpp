@@ -12,8 +12,7 @@ std::filesystem::path getExternPath() {
     if (exe_path.filename() == "build" || exe_path.filename() == "Release" || exe_path.filename() == "Debug") {
         exe_path = exe_path.parent_path();
     }
-    
-    // Retourner le chemin vers extern/
+
     return exe_path / "extern";
 }
 

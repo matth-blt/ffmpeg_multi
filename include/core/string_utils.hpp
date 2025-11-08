@@ -12,13 +12,11 @@ namespace StringUtils {
  */
 inline std::string removeQuotes(const std::string& str) {
     std::string result = str;
-    
-    // Supprimer les guillemets au début
+
     if (!result.empty() && (result.front() == '"' || result.front() == '\'')) {
         result.erase(0, 1);
     }
-    
-    // Supprimer les guillemets à la fin
+
     if (!result.empty() && (result.back() == '"' || result.back() == '\'')) {
         result.pop_back();
     }

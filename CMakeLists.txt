@@ -30,14 +30,18 @@ set(CLI_SOURCES
 
 # Jobs
 set(JOBS_SOURCES
+    src/jobs/codec_utils.cpp
     src/jobs/concat.cpp
     src/jobs/encode.cpp
     src/jobs/encode_builder.cpp
+    src/jobs/reencode.cpp
+    src/jobs/reencode_builder.cpp
     src/jobs/svt_av1_essential.cpp
     src/jobs/extract_frames.cpp
+    src/jobs/extract_frames_builder.cpp
     src/jobs/probe.cpp
-    src/jobs/reencode.cpp
     src/jobs/thumbnails.cpp
+    src/jobs/thumbnails_builder.cpp
 )
 
 # Pipelines
@@ -87,11 +91,11 @@ option(BUILD_TESTS "Build tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
     
-    add_executable(test_encode tests/test_encode.cpp src/jobs/encode.cpp src/jobs/encode_builder.cpp)
-    target_include_directories(test_encode PRIVATE ${HEADERS_DIR})
-    add_test(NAME test_encode COMMAND test_encode)
+    add_executable(test_reencode tests/test_encode.cpp src/jobs/reencode.cpp src/jobs/reencode_builder.cpp)
+    target_include_directories(test_reencode PRIVATE ${HEADERS_DIR})
+    add_test(NAME test_reencode COMMAND test_reencode)
     
-    add_executable(test_extract_frames tests/test_extract_frames.cpp src/jobs/extract_frames.cpp)
+    add_executable(test_extract_frames tests/test_extract_frames.cpp src/jobs/extract_frames.cpp src/jobs/extract_frames_builder.cpp)
     target_include_directories(test_extract_frames PRIVATE ${HEADERS_DIR})
     add_test(NAME test_extract_frames COMMAND test_extract_frames)
     

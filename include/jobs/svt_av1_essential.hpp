@@ -15,25 +15,24 @@ namespace Jobs {
 class SvtAv1EssentialJob {
 public:
     enum class Quality {
-        LOW,        // Rapide, qualité acceptable
-        MEDIUM,     // Équilibré
-        HIGH        // Lent, excellente qualité
+        LOW, // Rapide, qualité acceptable
+        MEDIUM, // Équilibré
+        HIGH // Lent, excellente qualité
     };
     
     struct Config {
         std::string input_path;
         std::string output_path;
         Quality quality{Quality::HIGH};
-        bool aggressive{false};      // Mode agressif (plus de compression)
-        bool unshackle{false};       // Libère les limites de vitesse
-        bool verbose{true};          // Affichage détaillé
-        bool cleanup{true};          // Nettoyage auto des fichiers temp
+        bool aggressive{false}; // Mode agressif (plus de compression)
+        bool unshackle{false}; // Libère les limites de vitesse
+        bool verbose{true}; // Affichage détaillé
+        bool cleanup{true}; // Nettoyage auto des fichiers temp
     };
     
     explicit SvtAv1EssentialJob(const std::string& input, const std::string& output);
     ~SvtAv1EssentialJob() = default;
-    
-    // Configuration
+
     void setQuality(Quality q);
     void setAggressive(bool enabled);
     void setUnshackle(bool enabled);
@@ -42,14 +41,12 @@ public:
     
     Config& config();
     const Config& config() const;
-    
-    // Exécution
+
     bool execute();
     
 private:
     Config config_;
-    
-    // Étapes du processus
+
     bool validatePaths();
     bool extractAudio();
     bool runAutoBoost();
@@ -62,7 +59,7 @@ private:
     std::filesystem::path getAviPath() const;
     std::filesystem::path getAudioPath() const;
     std::string buildABECommand() const;
-    std::filesystem::path getExternPath() const;  // Nouveau: chemin vers extern/
+    std::filesystem::path getExternPath() const;
 };
 
 /**

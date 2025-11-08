@@ -1,9 +1,12 @@
 #include "../../include/jobs/encode.hpp"
-#include "../../include/core/ffmpeg_process.hpp"
+#include "../../include/jobs/codec_utils.hpp"
 #include "../../include/core/path_utils.hpp"
 #include <iostream>
 #include <sstream>
-#include <stdexcept>
+#include <filesystem>
+#include <cstdlib>
+
+namespace fs = std::filesystem;
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -12,42 +15,75 @@ namespace Jobs {
 // CONSTRUCTEURS
 // ============================================================================
 
-EncodeJob::EncodeJob(const std::string& input_path, const std::string& output_path): input_path_(input_path), output_path_(output_path) {}
+EncodeJob::EncodeJob(const EncodeConfig& config) : config_(config) {}
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-void EncodeJob::setConfig(const Encode::EncodeConfig& config) {
+void EncodeJob::setConfig(const EncodeConfig& config) {
     config_ = config;
 }
 
-Encode::EncodeConfig& EncodeJob::config() {
+EncodeConfig& EncodeJob::config() {
     return config_;
 }
 
-const Encode::EncodeConfig& EncodeJob::config() const {
+const EncodeConfig& EncodeJob::config() const {
     return config_;
 }
 
 // ============================================================================
-// CHEMINS I/O
+// HELPERS
 // ============================================================================
 
-void EncodeJob::setInputPath(const std::string& path) { 
-    input_path_ = path; 
+bool EncodeJob::validatePaths() const {
+    if (!fs::exists(config_.input_dir)) {
+        std::cerr << "Erreur : Le dossier d'entrée n'existe pas : " << config_.input_dir << std::endl;
+        return false;
+    }
+
+    if (config_.output_dir.empty()) {
+        std::cerr << "Erreur : Le dossier de sortie n'est pas défini." << std::endl;
+        return false;
+    }
+
+    if (config_.output_filename.empty()) {
+        std::cerr << "Erreur : Le nom du fichier de sortie n'est pas défini." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
-void EncodeJob::setOutputPath(const std::string& path) { 
-    output_path_ = path; 
+std::string EncodeJob::getOutputPath() const {
+    std::string extension = getContainerExtension();
+    std::string filename = config_.output_filename;
+    
+    // Ajouter l'extension si elle n'est pas déjà présente
+    if (filename.find(extension) == std::string::npos) {
+        filename += extension;
+    }
+    
+    return (fs::path(config_.output_dir) / filename).string();
 }
 
-std::string EncodeJob::getInputPath() const { 
-    return input_path_; 
+std::string EncodeJob::getContainerExtension() const {
+    switch (config_.format) {
+        case ContainerFormat::MKV: return ".mkv";
+        case ContainerFormat::WEBM: return ".webm";
+        case ContainerFormat::MP4: return ".mp4";
+        case ContainerFormat::MOV: return ".mov";
+        default: return ".mkv";
+    }
 }
 
-std::string EncodeJob::getOutputPath() const { 
-    return output_path_; 
+std::string EncodeJob::getCodecName() const {
+    return Codec::CodecUtils::getEncoderName(config_.codec);
+}
+
+void EncodeJob::addCodecSpecificArgs(std::vector<std::string>& args) const {
+    Codec::CodecUtils::addCodecArgs(args, config_.codec, config_.quality, config_.preset);
 }
 
 // ============================================================================
@@ -56,26 +92,35 @@ std::string EncodeJob::getOutputPath() const {
 
 std::vector<std::string> EncodeJob::buildCommand() const {
     std::vector<std::string> args;
+
+    // Options globales
+    args.push_back("-hide_banner");
     
-    // Ordre FFmpeg standard :
-    // [options globales] -i input [options video] [options audio] output
+    // Framerate
+    args.push_back("-framerate");
+    args.push_back(std::to_string(config_.framerate));
     
-    addInputArgs(args);
-    addVideoCodecArgs(args);
-    addRateControlArgs(args);
-    addEncodingParams(args);
-    addPixelFormatArgs(args);
-    addColorSpaceArgs(args);
-    addHDRMetadata(args);
-    addAudioArgs(args);
+    // Pattern d'entrée
+    args.push_back("-i");
+    std::string input_path = (fs::path(config_.input_dir) / config_.input_pattern).string();
+    args.push_back(input_path);
     
-    // Extra arguments personnalisés
-    for (const auto& extra : config_.extra_args) {
-        args.push_back(extra);
+    // Codec vidéo
+    args.push_back("-c:v");
+    args.push_back(getCodecName());
+    
+    // Paramètres spécifiques au codec
+    addCodecSpecificArgs(args);
+    
+    // Pixel format par défaut (sauf pour ProRes et FFV1 qui ont leur propre pix_fmt)
+    if (config_.codec != Encode::Codec::ProRes && config_.codec != Encode::Codec::FFV1) {
+        args.push_back("-pix_fmt");
+        args.push_back("yuv420p");
     }
     
-    addOutputArgs(args);
-    
+    // Fichier de sortie
+    args.push_back(getOutputPath());
+
     return args;
 }
 
@@ -85,7 +130,6 @@ std::string EncodeJob::getCommandString() const {
     oss << "ffmpeg";
     for (const auto& arg : args) {
         oss << " ";
-        // Ajouter des guillemets si l'argument contient des espaces
         if (arg.find(' ') != std::string::npos) {
             oss << "\"" << arg << "\"";
         } else {
@@ -96,422 +140,57 @@ std::string EncodeJob::getCommandString() const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - INPUT
-// ============================================================================
-
-void EncodeJob::addInputArgs(std::vector<std::string>& args) const {
-    args.push_back("-i");
-    args.push_back(input_path_);
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - VIDEO CODEC
-// ============================================================================
-
-void EncodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
-    args.push_back("-c:v");
-    args.push_back(getEncoderName());
-    
-    // Paramètres spécifiques à ProRes
-    if (config_.codec == Encode::Codec::ProRes) {
-        args.push_back("-profile:v");
-        args.push_back(std::to_string(config_.prores_profile));
-        
-        args.push_back("-vendor");
-        args.push_back(config_.prores_vendor);
-        
-        args.push_back("-bits_per_mb");
-        args.push_back(std::to_string(config_.bits_per_mb));
-    }
-    
-    // Paramètres spécifiques à FFV1
-    if (config_.codec == Encode::Codec::FFV1) {
-        args.push_back("-coder");
-        args.push_back(std::to_string(config_.ffv1_coder));
-        
-        args.push_back("-context");
-        args.push_back(std::to_string(config_.ffv1_context));
-        
-        args.push_back("-level");
-        args.push_back(std::to_string(config_.ffv1_level));
-        
-        args.push_back("-slices");
-        args.push_back(std::to_string(config_.ffv1_slices));
-    }
-    
-    // Paramètres spécifiques à x264
-    if (config_.codec == Encode::Codec::X264 && !config_.x264_params.empty()) {
-        args.push_back("-x264-params");
-        args.push_back(config_.x264_params);
-    }
-    
-    // Paramètres spécifiques à NVENC
-    if (config_.codec == Encode::Codec::H264_NVENC || config_.codec == Encode::Codec::H265_NVENC) {
-        args.push_back("-b_adapt");
-        args.push_back(std::to_string(config_.b_adapt));
-        
-        args.push_back("-rc-lookahead");
-        args.push_back(std::to_string(config_.rc_lookahead));
-        
-        if (config_.qp_cb_offset != 0) {
-            args.push_back("-qp_cb_offset");
-            args.push_back(std::to_string(config_.qp_cb_offset));
-        }
-        
-        if (config_.qp_cr_offset != 0) {
-            args.push_back("-qp_cr_offset");
-            args.push_back(std::to_string(config_.qp_cr_offset));
-        }
-    }
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - RATE CONTROL
-// ============================================================================
-
-void EncodeJob::addRateControlArgs(std::vector<std::string>& args) const {
-    switch (config_.rate_control) {
-        case Encode::RateControl::CRF:
-            args.push_back("-crf");
-            args.push_back(std::to_string(config_.quality));
-            break;
-            
-        case Encode::RateControl::CQP:
-            args.push_back("-qp");
-            args.push_back(std::to_string(config_.quality));
-            break;
-            
-        case Encode::RateControl::VBR:
-            if (config_.bitrate_kbps > 0) {
-                args.push_back("-b:v");
-                args.push_back(std::to_string(config_.bitrate_kbps) + "k");
-            }
-            break;
-            
-        case Encode::RateControl::CBR:
-            if (config_.bitrate_kbps > 0) {
-                args.push_back("-b:v");
-                args.push_back(std::to_string(config_.bitrate_kbps) + "k");
-                args.push_back("-maxrate");
-                args.push_back(std::to_string(config_.bitrate_kbps) + "k");
-                
-                int buffer_size = config_.buffer_size_kbps > 0 ? config_.buffer_size_kbps : config_.bitrate_kbps * 2;
-                args.push_back("-bufsize");
-                args.push_back(std::to_string(buffer_size) + "k");
-            }
-            break;
-    }
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - ENCODING PARAMETERS
-// ============================================================================
-
-void EncodeJob::addEncodingParams(std::vector<std::string>& args) const {
-    // Preset
-    if (!config_.preset.empty()) {
-        args.push_back("-preset");
-        args.push_back(config_.preset);
-    }
-    
-    // Tune
-    if (!config_.tune.empty()) {
-        args.push_back("-tune");
-        args.push_back(config_.tune);
-    }
-    
-    // GOP size
-    if (config_.gop_size > 0) {
-        args.push_back("-g");
-        args.push_back(std::to_string(config_.gop_size));
-    }
-    
-    // B-frames
-    args.push_back("-bf");
-    args.push_back(std::to_string(config_.bframes));
-    
-    // Threads
-    if (config_.threads > 0) {
-        args.push_back("-threads");
-        args.push_back(std::to_string(config_.threads));
-    }
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - PIXEL FORMAT
-// ============================================================================
-
-void EncodeJob::addPixelFormatArgs(std::vector<std::string>& args) const {
-    args.push_back("-pix_fmt");
-    args.push_back(getPixelFormatString());
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - COLOR SPACE
-// ============================================================================
-
-void EncodeJob::addColorSpaceArgs(std::vector<std::string>& args) const {
-    if (config_.passthrough_color) {
-        return; // Conserver l'espace colorimétrique d'entrée
-    }
-    
-    // Range
-    args.push_back("-color_range");
-    args.push_back(getColorRangeString());
-    
-    // Primaries
-    args.push_back("-colorspace");
-    args.push_back(getColorMatrixString());
-    
-    args.push_back("-color_primaries");
-    args.push_back(getColorPrimariesString());
-    
-    // Transfer
-    args.push_back("-color_trc");
-    args.push_back(getTransferString());
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - HDR METADATA
-// ============================================================================
-
-void EncodeJob::addHDRMetadata(std::vector<std::string>& args) const {
-    // Content Light Level
-    if (config_.content_light_level.has_value()) {
-        const auto& cll = config_.content_light_level.value();
-        std::ostringstream oss;
-        oss << cll.max_cll << "," << cll.max_fall;
-        args.push_back("-max-cll");
-        args.push_back(oss.str());
-    }
-    
-    // Mastering Display
-    if (config_.mastering_display.has_value()) {
-        const auto& md = config_.mastering_display.value();
-        std::ostringstream oss;
-        oss << "G(" << md.green_x << "," << md.green_y << ")"
-            << "B(" << md.blue_x << "," << md.blue_y << ")"
-            << "R(" << md.red_x << "," << md.red_y << ")"
-            << "WP(" << md.white_x << "," << md.white_y << ")"
-            << "L(" << md.max_luminance << "," << md.min_luminance << ")";
-        args.push_back("-master-display");
-        args.push_back(oss.str());
-    }
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - AUDIO
-// ============================================================================
-
-void EncodeJob::addAudioArgs(std::vector<std::string>& args) const {
-    if (config_.audio.copy_audio) {
-        args.push_back("-c:a");
-        args.push_back("copy");
-    } else {
-        args.push_back("-c:a");
-        args.push_back(config_.audio.codec);
-        
-        if (config_.audio.bitrate_kbps > 0) {
-            args.push_back("-b:a");
-            args.push_back(std::to_string(config_.audio.bitrate_kbps) + "k");
-        }
-        
-        args.push_back("-ar");
-        args.push_back(std::to_string(config_.audio.sample_rate));
-        
-        args.push_back("-ac");
-        args.push_back(std::to_string(config_.audio.channels));
-    }
-}
-
-// ============================================================================
-// AJOUT DES ARGUMENTS - OUTPUT
-// ============================================================================
-
-void EncodeJob::addOutputArgs(std::vector<std::string>& args) const {
-    args.push_back(output_path_);
-}
-
-// ============================================================================
-// HELPERS - CONVERSION CODEC
-// ============================================================================
-
-std::string EncodeJob::getEncoderName() const {
-    // Si un encodeur personnalisé est spécifié, l'utiliser
-    if (!config_.encoder_override.empty()) {
-        return config_.encoder_override;
-    }
-    
-    // Sinon, mapper selon le codec
-    switch (config_.codec) {
-        case Encode::Codec::X264:
-            return "libx264";
-        case Encode::Codec::X265:
-            return "libx265";
-        case Encode::Codec::H264_NVENC:
-            return "h264_nvenc";
-        case Encode::Codec::H265_NVENC:
-            return "hevc_nvenc";
-        case Encode::Codec::AV1:
-            return "libaom-av1";
-        case Encode::Codec::SVT_AV1:
-            return "libsvtav1";
-        case Encode::Codec::ProRes:
-            return "prores_ks";
-        case Encode::Codec::FFV1:
-            return "ffv1";
-        default:
-            return "libx264";
-    }
-}
-
-// ============================================================================
-// HELPERS - CONVERSION PIXEL FORMAT
-// ============================================================================
-
-std::string EncodeJob::getPixelFormatString() const {
-    switch (config_.pixel_format) {
-        case Encode::PixelFormat::RGB24:
-            return "rgb24";
-        case Encode::PixelFormat::RGB48:
-            return "rgb48le";
-        case Encode::PixelFormat::RGBF16:
-            return "rgbf16le";
-        case Encode::PixelFormat::YUV420P8:
-            return "yuv420p";
-        case Encode::PixelFormat::YUV420P10:
-            return "yuv420p10le";
-        case Encode::PixelFormat::P010:
-            return "p010le";
-        case Encode::PixelFormat::NV12:
-            return "nv12";
-        case Encode::PixelFormat::YUV422P10:
-            return "yuv422p10le";
-        case Encode::PixelFormat::YUV444P10:
-            return "yuv444p10le";
-        case Encode::PixelFormat::YUVA444P10LE:
-            return "yuva444p10le";
-        default:
-            return "yuv420p";
-    }
-}
-
-// ============================================================================
-// HELPERS - CONVERSION COLOR SPACE
-// ============================================================================
-
-std::string EncodeJob::getColorRangeString() const {
-    switch (config_.color_profile.range) {
-        case Encode::Range::Limited:
-            return "tv";
-        case Encode::Range::Full:
-            return "pc";
-        default:
-            return "pc";
-    }
-}
-
-std::string EncodeJob::getColorPrimariesString() const {
-    switch (config_.color_profile.primaries) {
-        case Encode::ColorPrimaries::BT601:
-            return "bt470bg";
-        case Encode::ColorPrimaries::BT709:
-            return "bt709";
-        case Encode::ColorPrimaries::BT2020:
-            return "bt2020";
-        case Encode::ColorPrimaries::P3D65:
-            return "smpte432";
-        default:
-            return "bt709";
-    }
-}
-
-std::string EncodeJob::getTransferString() const {
-    switch (config_.color_profile.transfer) {
-        case Encode::TransferCharacteristic::SRGB:
-            return "iec61966-2-1";
-        case Encode::TransferCharacteristic::BT1886:
-            return "bt709";
-        case Encode::TransferCharacteristic::PQ:
-            return "smpte2084";
-        case Encode::TransferCharacteristic::HLG:
-            return "arib-std-b67";
-        default:
-            return "bt709";
-    }
-}
-
-std::string EncodeJob::getColorMatrixString() const {
-    switch (config_.color_profile.matrix) {
-        case Encode::MatrixCoefficients::BT601:
-            return "bt470bg";
-        case Encode::MatrixCoefficients::BT709:
-            return "bt709";
-        case Encode::MatrixCoefficients::BT2020NCL:
-            return "bt2020nc";
-        default:
-            return "bt709";
-    }
-}
-
-// ============================================================================
-// VALIDATION
-// ============================================================================
-
-bool EncodeJob::validate() const {
-    if (input_path_.empty()) {
-        throw std::runtime_error("Input path is empty");
-    }
-    
-    if (output_path_.empty()) {
-        throw std::runtime_error("Output path is empty");
-    }
-    
-    if (config_.rate_control == Encode::RateControl::VBR || 
-        config_.rate_control == Encode::RateControl::CBR) {
-        if (config_.bitrate_kbps <= 0) {
-            throw std::runtime_error("Bitrate must be > 0 for VBR/CBR modes");
-        }
-    }
-    
-    return true;
-}
-
-// ============================================================================
 // EXÉCUTION
 // ============================================================================
 
 bool EncodeJob::execute() {
-    try {
-        // Validation
-        validate();
-        
-        // Construction de la commande
-        auto args = buildCommand();
-        
-        // Log de la commande
-        std::cout << "[INFO] Encode command: " << getCommandString() << std::endl;
-        
-        // Exécution via FFmpegProcess avec chemin absolu
-        std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
-        std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
-        ffmpegProcess process(ffmpeg_path, args);
-        
-        // Exécuter réellement la commande
-        bool success = process.execute();
-        
-        if (success) {
-            std::cout << "[SUCCESS] Encodage terminé avec succès!" << std::endl;
-        } else {
-            std::cerr << "[ERROR] L'encodage a échoué!" << std::endl;
-        }
-        
-        return success;
-        
-    } catch (const std::exception& e) {
-        std::cerr << "[ERROR] Encode failed: " << e.what() << std::endl;
+    if (!validatePaths()) {
         return false;
     }
+
+    // Créer le dossier de sortie si nécessaire
+    try {
+        if (!fs::exists(config_.output_dir)) {
+            fs::create_directories(config_.output_dir);
+            std::cout << "[INFO] Dossier de sortie créé : " << config_.output_dir << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "[ERROR] Impossible de créer le dossier de sortie : " << e.what() << std::endl;
+        return false;
+    }
+
+    // Construction de la commande
+    auto args = buildCommand();
+    
+    // Log de la commande (comme dans reencode.cpp)
+    std::cout << "[INFO] Encode command: " << getCommandString() << std::endl;
+    
+    // Exécution via FFmpegProcess
+    std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
+    std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
+    
+    // Construction de la commande complète
+    std::string cmd = "\"" + ffmpeg_path.string() + "\"";
+    for (const auto& arg : args) {
+        cmd += " ";
+        if (arg.find(' ') != std::string::npos) {
+            cmd += "\"" + arg + "\"";
+        } else {
+            cmd += arg;
+        }
+    }
+    
+    int result = std::system(cmd.c_str());
+    bool success = (result == 0);
+
+    if (success) {
+        std::cout << "[SUCCESS] Encodage terminé avec succès!" << std::endl;
+        std::cout << "[INFO] Fichier créé : " << getOutputPath() << std::endl;
+    } else {
+        std::cerr << "[ERROR] L'encodage a échoué!" << std::endl;
+    }
+
+    return success;
 }
 
 } // namespace Jobs

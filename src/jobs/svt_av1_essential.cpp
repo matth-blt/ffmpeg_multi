@@ -198,10 +198,10 @@ bool SvtAv1EssentialJob::extractAudio() {
     std::ostringstream cmd;
     cmd << ffmpeg_str
         << " -i \"" << input_str << "\""
-        << " -vn"                          // Pas de vidéo
-        << " -c:a copy"                    // Copier l'audio sans réencodage
+        << " -vn" // Pas de vidéo
+        << " -c:a copy" // Copier l'audio sans réencodage
         << " \"" << audio_str << "\""
-        << " -y";                          // Écraser si existe
+        << " -y"; // Écraser si existe
     
     std::cout << "[CMD] " << cmd.str() << std::endl;
     

@@ -7,6 +7,7 @@
 #include "../../include/core/string_utils.hpp"
 #include "../../include/jobs/encode.hpp"
 #include "../../include/jobs/extract_frames.hpp"
+#include "../../include/jobs/probe.hpp"
 #include "../../include/jobs/reencode.hpp"
 #include "../../include/jobs/reencode_builder.hpp"
 #include "../../include/jobs/svt_av1_essential.hpp"
@@ -279,9 +280,7 @@ void choice() {
             
             try {
                 ExtractFramesBuilder builder;
-                builder.input(inputFile)
-                       .outputDir(outputDir)
-                       .createSubfolder(createSubfolder);
+                builder.input(inputFile).outputDir(outputDir).createSubfolder(createSubfolder);
                 
                 if (createSubfolder && !subfolderName.empty()) {
                     builder.subfolderName(subfolderName);
@@ -398,11 +397,7 @@ void choice() {
             
             try {
                 EncodeJobBuilder builder;
-                builder.inputDir(inputDir)
-                       .outputDir(outputDir)
-                       .outputFilename(outputFilename)
-                       .inputPattern(inputPattern)
-                       .framerate(framerate);
+                builder.inputDir(inputDir).outputDir(outputDir).outputFilename(outputFilename).inputPattern(inputPattern).framerate(framerate);
                 
                 // Configuration du format
                 switch (formatChoice) {
@@ -857,6 +852,78 @@ void choice() {
                 } else {
                     std::cout << std::endl;
                     std::cout << Colors::YELLOW << "🚫 Encodage annulé." << Colors::RESET << std::endl;
+                }
+                
+            } catch (const std::exception& e) {
+                handleError(e);
+            }
+            
+            break;
+        }
+        
+        case 7: {
+            try {
+                std::string inputFile;
+                
+                printHeader("🔍 ANALYSER UN MÉDIA");
+                std::cout << std::endl;
+                
+                // Demander le fichier d'entrée
+                std::cout << Colors::PEACH << "📁 Fichier d'entrée : " << Colors::RESET;
+                std::cin.ignore();
+                std::getline(std::cin, inputFile);
+                inputFile = StringUtils::clean(inputFile);
+                
+                std::cout << std::endl;
+                
+                // Créer le job FFProbe
+                Jobs::ProbeJob job(inputFile);
+                
+                // Exécuter l'analyse
+                printHeader("📊 ANALYSE FFPROBE");
+                std::cout << std::endl;
+                
+                job.execute();
+                
+                std::cout << std::endl;
+                
+                // Demander si on veut exporter
+                std::cout << Colors::PEACH << "💾 Exporter le résultat ? (o/n) : " << Colors::RESET;
+                char exportChoice;
+                std::cin >> exportChoice;
+                
+                if (exportChoice == 'o' || exportChoice == 'O') {
+                    std::cout << std::endl;
+                    
+                    // Demander le format
+                    std::cout << Colors::BLUE << "┌────────────────────────────────────────────┐" << Colors::RESET << std::endl;
+                    std::cout << Colors::BLUE << "│" << Colors::TEXT << "  Format d'export :                        " << Colors::BLUE << "│" << Colors::RESET << std::endl;
+                    std::cout << Colors::BLUE << "├────────────────────────────────────────────┤" << Colors::RESET << std::endl;
+                    std::cout << Colors::BLUE << "│  " << Colors::MAUVE << "1" << Colors::RESET << Colors::BLUE << "  │  " << Colors::TEXT << "JSON (sortie brute FFProbe)      " << Colors::BLUE << "│" << Colors::RESET << std::endl;
+                    std::cout << Colors::BLUE << "│  " << Colors::MAUVE << "2" << Colors::RESET << Colors::BLUE << "  │  " << Colors::TEXT << "TXT  (sortie formatée lisible)   " << Colors::BLUE << "│" << Colors::RESET << std::endl;
+                    std::cout << Colors::BLUE << "└────────────────────────────────────────────┘" << Colors::RESET << std::endl;
+                    std::cout << std::endl;
+                    std::cout << Colors::PEACH << "👉 Choix : " << Colors::RESET;
+                    
+                    int formatChoice;
+                    std::cin >> formatChoice;
+                    std::cout << std::endl;
+                    
+                    bool isJson = (formatChoice == 1);
+                    std::string exportPath = job.generateExportPath(isJson);
+                    
+                    if (isJson) {
+                        // Exporter le JSON brut
+                        job.writeToFile(exportPath, job.getOutput());
+                        std::cout << Colors::GREEN << "✅ Analyse exportée (JSON) : " << Colors::TEAL << exportPath << Colors::RESET << std::endl;
+                    } else {
+                        // Exporter le texte formaté
+                        job.writeToFile(exportPath, job.getFormattedOutput());
+                        std::cout << Colors::GREEN << "✅ Analyse exportée (TXT)  : " << Colors::TEAL << exportPath << Colors::RESET << std::endl;
+                    }
+                } else {
+                    std::cout << std::endl;
+                    std::cout << Colors::SUBTEXT << "ℹ️  Résultat non exporté." << Colors::RESET << std::endl;
                 }
                 
             } catch (const std::exception& e) {

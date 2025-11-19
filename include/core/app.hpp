@@ -5,6 +5,6 @@
 
 namespace App {
     void affiche();
-    void choice();
+    bool choice();
 
 };

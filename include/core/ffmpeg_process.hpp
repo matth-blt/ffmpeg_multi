@@ -7,7 +7,7 @@
 
 class ffmpegProcess {
 public:
-    explicit ffmpegProcess(std::filesystem::path ExecutablePath_init, std::vector<std::string> args_init);
+    explicit ffmpegProcess(const std::filesystem::path& ExecutablePath_init, const std::vector<std::string>& args_init);
     ~ffmpegProcess() = default;
 
     std::filesystem::path getExecutablePath();

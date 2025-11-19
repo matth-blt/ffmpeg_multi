@@ -1,6 +1,7 @@
 #include "../../include/jobs/encode.hpp"
 #include "../../include/jobs/codec_utils.hpp"
 #include "../../include/core/path_utils.hpp"
+#include "../../include/core/ffmpeg_process.hpp"
 #include <iostream>
 #include <sstream>
 #include <filesystem>
@@ -169,19 +170,8 @@ bool EncodeJob::execute() {
     std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
     std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
     
-    // Construction de la commande complète
-    std::string cmd = "\"" + ffmpeg_path.string() + "\"";
-    for (const auto& arg : args) {
-        cmd += " ";
-        if (arg.find(' ') != std::string::npos) {
-            cmd += "\"" + arg + "\"";
-        } else {
-            cmd += arg;
-        }
-    }
-    
-    int result = std::system(cmd.c_str());
-    bool success = (result == 0);
+    ffmpegProcess process(ffmpeg_path, args);
+    bool success = process.execute();
 
     if (success) {
         std::cout << "[SUCCESS] Encodage terminé avec succès!" << std::endl;

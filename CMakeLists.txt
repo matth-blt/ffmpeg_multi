@@ -20,6 +20,7 @@ set(CORE_SOURCES
     src/core/job.cpp
     src/core/logger.cpp
     src/core/path_utils.cpp
+    src/core/input.cpp
 )
 
 # CLI

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../core/job.hpp"
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -33,7 +34,7 @@ struct ThumbnailsConfig {
  * Ce job extrait automatiquement des thumbnails uniquement lors des changements de scènes,
  * évitant ainsi les images dupliquées ou très similaires.
  */
-class ThumbnailsJob {
+class ThumbnailsJob : public FFmpegMulti::Core::Job {
 public:
     ThumbnailsJob() = default;
     explicit ThumbnailsJob(const ThumbnailsConfig& config);
@@ -44,7 +45,7 @@ public:
     const ThumbnailsConfig& config() const;
 
     // Exécution
-    bool execute();
+    bool execute() override;
 
     // Construction de la commande
     std::vector<std::string> buildCommand() const;

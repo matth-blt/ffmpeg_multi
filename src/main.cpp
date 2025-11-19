@@ -1,9 +1,10 @@
 #include <iostream>
 #include "core/app.hpp"
 
-int main(int argc, char **argv) {
-    App::affiche();
-    App::choice();
+int main() {
+    do {
+        App::affiche();
+    } while (App::choice());
 
     return 0;
 }

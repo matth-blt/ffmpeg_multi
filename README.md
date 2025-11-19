@@ -9,8 +9,8 @@ Un outil en ligne de commande puissant pour gérer vos tâches d'encodage vidéo
 - ✅ **Réencodage** - Réencode des fichiers vidéo existants avec différents codecs et paramètres
 - ✅ **Génération de thumbnails** - Extrait des miniatures avec détection automatique de scènes
 - ✅ **SVT-AV1-Essential** - Encodage AV1 optimisé via Auto-Boost-Essential
-- ⏳ **Concaténation** - Fusionne plusieurs vidéos (non implémenté)
-- ⏳ **Analyse ffprobe** - Analyse de médias avec ffprobe (non implémenté)
+- ✅ **Concaténation** - Fusionne plusieurs vidéos sans perte (via MKVMerge)
+- ✅ **Analyse ffprobe** - Analyse détaillée de médias avec export JSON/TXT
 
 ## 🚀 Installation
 
@@ -20,6 +20,7 @@ Un outil en ligne de commande puissant pour gérer vos tâches d'encodage vidéo
 - **Visual Studio 2019+** ou **MinGW-w64**
 - **CMake 3.15+**
 - **FFmpeg** (fourni dans `extern/`)
+- **MKVToolNix** (fourni dans `extern/env/mkvtoolnix/`)
 
 ### Compilation
 
@@ -61,9 +62,11 @@ ffmpeg.multi/
 │   │   └── string_utils.hpp
 │   ├── jobs/
 │   │   ├── codec_utils.hpp      # Utilitaires codecs (partagé)
+│   │   ├── concat.hpp           # 🆕 Concaténation vidéo
 │   │   ├── encode.hpp           # Encodage images→vidéo
 │   │   ├── encode_types.hpp     # Types communs
 │   │   ├── extract_frames.hpp   # Extraction de frames
+│   │   ├── probe.hpp            # 🆕 Analyse FFprobe
 │   │   ├── reencode.hpp         # Réencodage vidéo
 │   │   ├── svt_av1_essential.hpp
 │   │   └── thumbnails.hpp       # Génération de miniatures
@@ -81,15 +84,17 @@ ffmpeg.multi/
 │   │   ├── logger.cpp
 │   │   └── path_utils.cpp
 │   ├── jobs/
-│   │   ├── codec_utils.cpp      # 🆕 Logique codecs centralisée
-│   │   ├── encode.cpp           # 🆕 Images→Vidéo
+│   │   ├── codec_utils.cpp      # Logique codecs centralisée
+│   │   ├── concat.cpp           # 🆕 Concaténation vidéo
+│   │   ├── encode.cpp           # Images→Vidéo
 │   │   ├── encode_builder.cpp
-│   │   ├── extract_frames.cpp   # 🆕 Extraction frames
+│   │   ├── extract_frames.cpp   # Extraction frames
 │   │   ├── extract_frames_builder.cpp
+│   │   ├── probe.cpp            # 🆕 Analyse FFprobe
 │   │   ├── reencode.cpp         # Réencodage vidéo
 │   │   ├── reencode_builder.cpp
 │   │   ├── svt_av1_essential.cpp
-│   │   ├── thumbnails.cpp       # 🆕 Miniatures avec détection scènes
+│   │   ├── thumbnails.cpp       # Miniatures avec détection scènes
 │   │   └── thumbnails_builder.cpp
 │   └── pipelines/
 │       ├── pipeline_base.cpp
@@ -199,6 +204,20 @@ Réencode une vidéo existante avec un autre codec ou paramètres.
 - Tune options (film, animation, grain, etc.)
 - Copie audio sans réencodage
 
+### 4️⃣ Concaténer plusieurs vidéos
+
+Fusionne plusieurs fichiers vidéo en un seul fichier MKV sans réencodage.
+
+**Technologie :**
+- Utilise **MKVMerge** (MKVToolNix) pour une fusion sans perte (lossless).
+- Beaucoup plus rapide que le réencodage.
+- Préserve la qualité originale des flux vidéo et audio.
+
+**Fonctionnement :**
+- Accepte un nombre illimité de fichiers d'entrée.
+- Détecte automatiquement `mkvmerge.exe` dans l'environnement portable.
+- Sortie forcée en `.mkv`.
+
 ### 5️⃣ Générer des miniatures
 
 Génère automatiquement des thumbnails aux changements de scènes.
@@ -220,6 +239,15 @@ Génère automatiquement des thumbnails aux changements de scènes.
 ### 6️⃣ Encoder avec SVT-AV1-Essential
 
 Voir section dédiée ci-dessous.
+
+### 7️⃣ Analyser un média (ffprobe)
+
+Analyse approfondie des flux vidéo, audio et sous-titres d'un fichier.
+
+**Fonctionnalités :**
+- Affichage des métadonnées complètes (codec, bitrate, résolution, pixel format, etc.).
+- **Export JSON** : Sortie brute de FFprobe pour traitement automatisé.
+- **Export TXT** : Rapport formaté lisible par un humain.
 
 ## 🚀 Encodage SVT-AV1-Essential
 
@@ -398,13 +426,19 @@ La logique des codecs a été **centralisée** dans `codec_utils.hpp/cpp` pour �
 
 ## 🚧 Fonctionnalités à venir
 
-- ⏳ **Concaténation de vidéos** (Option 4)
-- ⏳ **Analyse ffprobe** (Option 7)
 - ⏳ **Pipeline batch** pour traiter plusieurs fichiers
 - ⏳ **Presets personnalisés** sauvegardables
 - ⏳ **Interface graphique** (optionnelle)
 
 ## 📝 Notes de version
+
+### v1.1.0 (19 novembre 2025)
+
+**Nouveautés :**
+- ✅ **Concaténation vidéo** : Fusion sans perte via MKVMerge (Option 4)
+- ✅ **Analyse FFprobe** : Analyse détaillée avec export JSON/TXT (Option 7)
+- ✅ **Navigation** : Ajout de la commande `:q` pour revenir au menu précédent
+- ✅ **Stabilité** : Correction du crash à la fermeture (boucle principale)
 
 ### v1.0.0 (9 novembre 2025)
 
@@ -443,5 +477,5 @@ MIT License - voir [LICENSE](LICENSE)
 
 ---
 
-**Version**: 1.0.0  
-**Dernière mise à jour**: 9 novembre 2025
+**Version**: 1.1.0  
+**Dernière mise à jour**: 19 novembre 2025

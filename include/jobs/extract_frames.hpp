@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../core/job.hpp"
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -29,7 +30,7 @@ struct ExtractFramesConfig {
 /**
  * @brief Job d'extraction de frames d'une vidéo
  */
-class ExtractFramesJob {
+class ExtractFramesJob : public FFmpegMulti::Core::Job {
 public:
     ExtractFramesJob() = default;
     explicit ExtractFramesJob(const ExtractFramesConfig& config);
@@ -38,7 +39,7 @@ public:
     ExtractFramesConfig& config();
     const ExtractFramesConfig& config() const;
 
-    bool execute();
+    bool execute() override;
 
     std::vector<std::string> buildCommand() const;
     std::string getCommandString() const;

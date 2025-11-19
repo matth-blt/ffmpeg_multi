@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "encode_types.hpp"
+#include "../core/job.hpp"
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -36,7 +37,7 @@ struct EncodeConfig {
 /**
  * @brief Job d'encodage d'images vers vidéo
  */
-class EncodeJob {
+class EncodeJob : public FFmpegMulti::Core::Job {
 public:
     EncodeJob() = default;
     explicit EncodeJob(const EncodeConfig& config);
@@ -45,7 +46,7 @@ public:
     EncodeConfig& config();
     const EncodeConfig& config() const;
 
-    bool execute();
+    bool execute() override;
 
     std::vector<std::string> buildCommand() const;
     std::string getCommandString() const;

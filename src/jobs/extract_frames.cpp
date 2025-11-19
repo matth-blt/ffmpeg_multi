@@ -212,7 +212,10 @@ bool ExtractFramesJob::execute() {
     std::cout << "[INFO] Extract frames command: " << getCommandString() << std::endl;
     
     // Exécution via FFmpegProcess
-    ffmpegProcess ffmpeg("ffmpeg", args);
+    std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
+    std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
+    
+    ffmpegProcess ffmpeg(ffmpeg_path, args);
     bool success = ffmpeg.execute();
 
     if (success) {

@@ -4,7 +4,7 @@
 
 #include "../../include/core/ffmpeg_process.hpp"
 
-ffmpegProcess::ffmpegProcess(std::filesystem::path ExecutablePath_init, std::vector<std::string> args_init) :  ExecutablePath{ExecutablePath_init}, args{args_init} {}
+ffmpegProcess::ffmpegProcess(const std::filesystem::path& ExecutablePath_init, const std::vector<std::string>& args_init) :  ExecutablePath{ExecutablePath_init}, args{args_init} {}
 
 std::filesystem::path ffmpegProcess::getExecutablePath() {
     return ExecutablePath;

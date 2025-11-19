@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "encode_types.hpp"
+#include "../core/job.hpp"
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -16,7 +17,7 @@ namespace Jobs {
  * - Construction de la ligne de commande FFmpeg
  * - Exécution du réencodage
  */
-class ReencodeJob {
+class ReencodeJob : public FFmpegMulti::Core::Job {
 public:
     /**
      * @brief Constructeur avec chemins d'entrée et de sortie
@@ -88,7 +89,7 @@ public:
      * @brief Exécute l'encodage avec la configuration actuelle
      * @return true si l'encodage a réussi, false sinon
      */
-    bool execute();
+    bool execute() override;
     
     /**
      * @brief Valide la configuration avant exécution

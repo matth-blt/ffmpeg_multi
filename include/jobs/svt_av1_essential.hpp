@@ -2,6 +2,7 @@
 
 #include <string>
 #include <filesystem>
+#include "../core/job.hpp"
 
 namespace FFmpegMulti {
 namespace Jobs {
@@ -12,7 +13,7 @@ namespace Jobs {
  * Utilise Auto-Boost-Essential.py pour un encodage AV1 optimisé
  * avec gestion automatique de l'audio et du muxing final.
  */
-class SvtAv1EssentialJob {
+class SvtAv1EssentialJob : public FFmpegMulti::Core::Job {
 public:
     enum class Quality {
         LOW, // Rapide, qualité acceptable
@@ -42,7 +43,7 @@ public:
     Config& config();
     const Config& config() const;
 
-    bool execute();
+    bool execute() override;
     
 private:
     Config config_;

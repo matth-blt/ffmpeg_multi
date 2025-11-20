@@ -9,12 +9,11 @@ namespace Codec {
 // ============================================================================
 
 std::string CodecUtils::getEncoderName(Encode::Codec codec, const std::string& encoder_override) {
-    // Encodeur personnalisé prioritaire
-    if (!encoder_override.empty()) {
+    // Custom encoder priority
+    if (!encoder_override.empty())
         return encoder_override;
-    }
     
-    // Mapping standard
+    // Standard mapping
     switch (codec) {
         case Encode::Codec::X264:
             return "libx264";
@@ -104,7 +103,7 @@ void CodecUtils::addFFV1Args(std::vector<std::string>& args, int level, int code
     args.push_back(std::to_string(context));
     
     args.push_back("-g");
-    args.push_back("1"); // Intra-only pour lossless
+    args.push_back("1");
     
     args.push_back("-slices");
     args.push_back(std::to_string(slices));
@@ -115,29 +114,26 @@ void CodecUtils::addFFV1Args(std::vector<std::string>& args, int level, int code
 // ============================================================================
 
 std::string CodecUtils::getContainerExtension(const std::string& container) {
-    if (container == "mkv") return ".mkv";
-    if (container == "webm") return ".webm";
-    if (container == "mp4") return ".mp4";
-    if (container == "mov") return ".mov";
+    if (container == "mkv")
+        return ".mkv";
+    if (container == "webm")
+        return ".webm";
+    if (container == "mp4")
+        return ".mp4";
+    if (container == "mov")
+        return ".mov";
     return ".mkv";
 }
 
 bool CodecUtils::isCodecCompatibleWithContainer(Encode::Codec codec, const std::string& container) {
-    if (container == "webm") {
+    if (container == "webm")
         return codec == Encode::Codec::AV1 || codec == Encode::Codec::SVT_AV1;
-    }
-
-    if (container == "mov") {
+    if (container == "mov")
         return true;
-    }
-
-    if (container == "mkv") {
+    if (container == "mkv")
         return true;
-    }
-
-    if (container == "mp4") {
+    if (container == "mp4")
         return codec != Encode::Codec::FFV1;
-    }
     
     return true;
 }
@@ -147,7 +143,7 @@ bool CodecUtils::isCodecCompatibleWithContainer(Encode::Codec codec, const std::
 // ============================================================================
 
 bool CodecUtils::validateQuality(Encode::Codec codec, int quality) {
-    // CRF/QP : 0-51 pour la plupart
+    // CRF/QP : 0-51 for most
     if (codec == Encode::Codec::X264 || codec == Encode::Codec::X265 || 
         codec == Encode::Codec::AV1 || codec == Encode::Codec::SVT_AV1 ||
         codec == Encode::Codec::H264_NVENC || codec == Encode::Codec::H265_NVENC) {

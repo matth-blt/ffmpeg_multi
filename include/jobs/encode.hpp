@@ -9,7 +9,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 /**
- * @brief Format de conteneur pour la vidéo de sortie
+ * @brief Container format for output video
  */
 enum class ContainerFormat {
     MKV, // Matroska
@@ -19,23 +19,23 @@ enum class ContainerFormat {
 };
 
 /**
- * @brief Configuration pour l'encodage d'images vers vidéo
+ * @brief Configuration for image-to-video encoding
  */
 struct EncodeConfig {
-    std::string input_dir; // Dossier contenant les images
-    std::string output_dir; // Dossier de sortie
-    std::string output_filename; // Nom du fichier vidéo de sortie
+    std::string input_dir; // Directory containing images
+    std::string output_dir; // Output directory
+    std::string output_filename; // Output video filename
     ContainerFormat format{ContainerFormat::MKV};
     Encode::Codec codec{Encode::Codec::X264};
 
-    int quality{23}; // CRF/QP par défaut
-    std::string preset{"medium"}; // Preset d'encodage
-    int framerate{24}; // FPS par défaut
-    std::string input_pattern{"%08d.png"}; // Pattern des images (ex: 00000001.png)
+    int quality{23}; // Default CRF/QP
+    std::string preset{"medium"}; // Encoding preset
+    int framerate{24}; // Default FPS
+    std::string input_pattern{"%08d.png"}; // Image pattern (e.g., 00000001.png)
 };
 
 /**
- * @brief Job d'encodage d'images vers vidéo
+ * @brief Image-to-video encoding job
  */
 class EncodeJob : public FFmpegMulti::Core::Job {
 public:
@@ -62,7 +62,7 @@ private:
 };
 
 /**
- * @brief Builder pour EncodeJob
+ * @brief Builder for EncodeJob
  */
 class EncodeJobBuilder {
 public:

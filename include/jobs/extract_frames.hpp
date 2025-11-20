@@ -8,7 +8,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 /**
- * @brief Format d'image pour l'extraction de frames
+ * @brief Image format for frame extraction
  */
 enum class ImageFormat {
     PNG,
@@ -17,7 +17,7 @@ enum class ImageFormat {
 };
 
 /**
- * @brief Configuration pour l'extraction de frames
+ * @brief Configuration for frame extraction
  */
 struct ExtractFramesConfig {
     std::string input_path;
@@ -28,7 +28,7 @@ struct ExtractFramesConfig {
 };
 
 /**
- * @brief Job d'extraction de frames d'une vidéo
+ * @brief Job for extracting frames from a video
  */
 class ExtractFramesJob : public FFmpegMulti::Core::Job {
 public:
@@ -54,7 +54,7 @@ private:
 };
 
 /**
- * @brief Builder pour ExtractFramesJob
+ * @brief Builder for ExtractFramesJob
  */
 class ExtractFramesBuilder {
 public:

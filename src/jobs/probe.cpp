@@ -154,7 +154,7 @@ void ProbeJob::parseAndFormatOutput() {
     const char* BOLD = "\033[1m";
     
     formatted << "\n" << BLUE << "╔═══════════════════════════════════════════════════════╗" << RESET << "\n";
-    formatted << BLUE << "║  " << CYAN << BOLD << "📊 INFORMATIONS DU MÉDIA" << RESET << BLUE << "                        ║" << RESET << "\n";
+    formatted << BLUE << "║  " << CYAN << BOLD << "📊 MEDIA INFORMATION" << RESET << BLUE << "                            ║" << RESET << "\n";
     formatted << BLUE << "╚═══════════════════════════════════════════════════════╝" << RESET << "\n\n";
     
     // Extract format info
@@ -165,26 +165,26 @@ void ProbeJob::parseAndFormatOutput() {
     std::string sizeStr = extractJsonValue(output_, "size");
     std::string bitRateStr = extractJsonValue(output_, "bit_rate");
     
-    formatted << GREEN << "📁 Fichier" << RESET << "\n";
+    formatted << GREEN << "📁 File" << RESET << "\n";
     formatted << "   " << filename << "\n\n";
     
     formatted << GREEN << "🎬 Format" << RESET << "\n";
     formatted << "   Type      : " << formatName << "\n";
-    formatted << "   Nom       : " << formatLongName << "\n";
+    formatted << "   Name      : " << formatLongName << "\n";
     
     if (durationStr != "N/A") {
         double duration = std::stod(durationStr);
-        formatted << "   Durée     : " << formatDuration(duration) << "\n";
+        formatted << "   Duration  : " << formatDuration(duration) << "\n";
     }
     
     if (sizeStr != "N/A") {
         long long size = std::stoll(sizeStr);
-        formatted << "   Taille    : " << formatBytes(size) << "\n";
+        formatted << "   Size      : " << formatBytes(size) << "\n";
     }
     
     if (bitRateStr != "N/A") {
         long long bitRate = std::stoll(bitRateStr);
-        formatted << "   Débit     : " << (bitRate / 1000) << " kb/s\n";
+        formatted << "   Bitrate   : " << (bitRate / 1000) << " kb/s\n";
     }
     
     // Count streams
@@ -202,9 +202,9 @@ void ProbeJob::parseAndFormatOutput() {
     }
     
     formatted << "\n" << GREEN << "🎞️  Streams" << RESET << "\n";
-    formatted << "   Vidéo     : " << videoStreams << "\n";
+    formatted << "   Video     : " << videoStreams << "\n";
     formatted << "   Audio     : " << audioStreams << "\n";
-    formatted << "   Sous-titre: " << subtitleStreams << "\n";
+    formatted << "   Subtitle  : " << subtitleStreams << "\n";
     
     // Extract first video stream info
     pos = output_.find("\"codec_type\": \"video\"");
@@ -217,13 +217,13 @@ void ProbeJob::parseAndFormatOutput() {
         std::string pixFmt = extractJsonValue(videoSection, "pix_fmt");
         std::string rFrameRate = extractJsonValue(videoSection, "r_frame_rate");
         
-        formatted << "\n" << YELLOW << "📹 Vidéo" << RESET << "\n";
+        formatted << "\n" << YELLOW << "📹 Video" << RESET << "\n";
         formatted << "   Codec     : " << codecName;
         if (codecLongName != "N/A") formatted << " (" << codecLongName << ")";
         formatted << "\n";
         
         if (width != "N/A" && height != "N/A") {
-            formatted << "   Résolution: " << width << "x" << height << "\n";
+            formatted << "   Resolution: " << width << "x" << height << "\n";
         }
         
         if (pixFmt != "N/A") {
@@ -254,11 +254,11 @@ void ProbeJob::parseAndFormatOutput() {
         formatted << "\n";
         
         if (sampleRate != "N/A") {
-            formatted << "   Échant.   : " << sampleRate << " Hz\n";
+            formatted << "   Sample Rate: " << sampleRate << " Hz\n";
         }
         
         if (channels != "N/A") {
-            formatted << "   Canaux    : " << channels;
+            formatted << "   Channels  : " << channels;
             if (channelLayout != "N/A") formatted << " (" << channelLayout << ")";
             formatted << "\n";
         }

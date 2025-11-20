@@ -13,7 +13,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 // ============================================================================
-// CONSTRUCTEURS
+// CONSTRUCTORS
 // ============================================================================
 
 EncodeJob::EncodeJob(const EncodeConfig& config) : config_(config) {}
@@ -40,17 +40,17 @@ const EncodeConfig& EncodeJob::config() const {
 
 bool EncodeJob::validatePaths() const {
     if (!fs::exists(config_.input_dir)) {
-        std::cerr << "Erreur : Le dossier d'entrée n'existe pas : " << config_.input_dir << std::endl;
+        std::cerr << "Error: Input directory does not exist: " << config_.input_dir << std::endl;
         return false;
     }
 
     if (config_.output_dir.empty()) {
-        std::cerr << "Erreur : Le dossier de sortie n'est pas défini." << std::endl;
+        std::cerr << "Error: Output directory is not defined." << std::endl;
         return false;
     }
 
     if (config_.output_filename.empty()) {
-        std::cerr << "Erreur : Le nom du fichier de sortie n'est pas défini." << std::endl;
+        std::cerr << "Error: Output filename is not defined." << std::endl;
         return false;
     }
 
@@ -61,7 +61,7 @@ std::string EncodeJob::getOutputPath() const {
     std::string extension = getContainerExtension();
     std::string filename = config_.output_filename;
     
-    // Ajouter l'extension si elle n'est pas déjà présente
+    // Add extension if not already present
     if (filename.find(extension) == std::string::npos) {
         filename += extension;
     }
@@ -88,38 +88,38 @@ void EncodeJob::addCodecSpecificArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// CONSTRUCTION DE LA COMMANDE
+// COMMAND CONSTRUCTION
 // ============================================================================
 
 std::vector<std::string> EncodeJob::buildCommand() const {
     std::vector<std::string> args;
 
-    // Options globales
+    // Global options
     args.push_back("-hide_banner");
     
     // Framerate
     args.push_back("-framerate");
     args.push_back(std::to_string(config_.framerate));
     
-    // Pattern d'entrée
+    // Input pattern
     args.push_back("-i");
     std::string input_path = (fs::path(config_.input_dir) / config_.input_pattern).string();
     args.push_back(input_path);
     
-    // Codec vidéo
+    // Video codec
     args.push_back("-c:v");
     args.push_back(getCodecName());
     
-    // Paramètres spécifiques au codec
+    // Codec specific parameters
     addCodecSpecificArgs(args);
     
-    // Pixel format par défaut (sauf pour ProRes et FFV1 qui ont leur propre pix_fmt)
+    // Default pixel format (except for ProRes and FFV1 which have their own pix_fmt)
     if (config_.codec != Encode::Codec::ProRes && config_.codec != Encode::Codec::FFV1) {
         args.push_back("-pix_fmt");
         args.push_back("yuv420p");
     }
     
-    // Fichier de sortie
+    // Output file
     args.push_back(getOutputPath());
 
     return args;
@@ -141,7 +141,7 @@ std::string EncodeJob::getCommandString() const {
 }
 
 // ============================================================================
-// EXÉCUTION
+// EXECUTION
 // ============================================================================
 
 bool EncodeJob::execute() {
@@ -149,24 +149,24 @@ bool EncodeJob::execute() {
         return false;
     }
 
-    // Créer le dossier de sortie si nécessaire
+    // Create output directory if necessary
     try {
         if (!fs::exists(config_.output_dir)) {
             fs::create_directories(config_.output_dir);
-            std::cout << "[INFO] Dossier de sortie créé : " << config_.output_dir << std::endl;
+            std::cout << "[INFO] Output directory created: " << config_.output_dir << std::endl;
         }
     } catch (const std::exception& e) {
-        std::cerr << "[ERROR] Impossible de créer le dossier de sortie : " << e.what() << std::endl;
+        std::cerr << "[ERROR] Unable to create output directory: " << e.what() << std::endl;
         return false;
     }
 
-    // Construction de la commande
+    // Build command
     auto args = buildCommand();
     
-    // Log de la commande (comme dans reencode.cpp)
+    // Log command (like in reencode.cpp)
     std::cout << "[INFO] Encode command: " << getCommandString() << std::endl;
     
-    // Exécution via FFmpegProcess
+    // Execution via FFmpegProcess
     std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
     std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
     
@@ -174,10 +174,10 @@ bool EncodeJob::execute() {
     bool success = process.execute();
 
     if (success) {
-        std::cout << "[SUCCESS] Encodage terminé avec succès!" << std::endl;
-        std::cout << "[INFO] Fichier créé : " << getOutputPath() << std::endl;
+        std::cout << "[SUCCESS] Encoding finished successfully!" << std::endl;
+        std::cout << "[INFO] File created: " << getOutputPath() << std::endl;
     } else {
-        std::cerr << "[ERROR] L'encodage a échoué!" << std::endl;
+        std::cerr << "[ERROR] Encoding failed!" << std::endl;
     }
 
     return success;

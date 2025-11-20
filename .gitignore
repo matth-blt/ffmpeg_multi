@@ -43,23 +43,3 @@ extern/
 *.log
 *.bak
 *~
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Test outputs
-tests/output/
-*.test
-
-# Docs
-docs/
-docs/*.md
-
-presets/
-presets/*.json
-# Assets (optional - uncomment if you want to ignore large media files)
-# assets/samples/*.mp4
-# assets/samples/*.mkv
-# assets/samples/*.avi

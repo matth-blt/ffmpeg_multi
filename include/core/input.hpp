@@ -8,28 +8,28 @@ namespace FFmpegMulti {
     class BackException : public std::exception {
     public:
         const char* what() const noexcept override {
-            return "Retour au menu demandé";
+            return "Back to menu requested";
         }
     };
 
     class Input {
     public:
-        // Demande une chaîne de caractères
+        // Request a string
         static std::string getString(const std::string& prompt, const std::string& hint = "", bool allowEmpty = false);
         
-        // Demande un entier
+        // Request an integer
         static int getInt(const std::string& prompt, const std::string& hint = "");
         
-        // Demande un entier dans une plage
+        // Request an integer within a range
         static int getIntRange(const std::string& prompt, int min, int max, const std::string& hint = "");
         
-        // Demande un float
+        // Request a float
         static float getFloat(const std::string& prompt, const std::string& hint = "");
         
-        // Demande une confirmation (o/n)
+        // Request confirmation (y/n)
         static bool getConfirm(const std::string& prompt);
         
-        // Pause pour lire
+        // Pause to read
         static void wait();
     };
 }

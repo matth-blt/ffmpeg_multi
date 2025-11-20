@@ -13,7 +13,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 // ============================================================================
-// CONSTRUCTEURS
+// CONSTRUCTORS
 // ============================================================================
 
 ThumbnailsJob::ThumbnailsJob(const ThumbnailsConfig& config) : config_(config) {}
@@ -40,12 +40,12 @@ const ThumbnailsConfig& ThumbnailsJob::config() const {
 
 bool ThumbnailsJob::validatePaths() const {
     if (!fs::exists(config_.input_path)) {
-        std::cerr << "Erreur : Le fichier d'entrée n'existe pas : " << config_.input_path << std::endl;
+        std::cerr << "Error: Input file does not exist: " << config_.input_path << std::endl;
         return false;
     }
 
     if (config_.output_dir.empty()) {
-        std::cerr << "Erreur : Le dossier de sortie n'est pas défini." << std::endl;
+        std::cerr << "Error: Output directory is not defined." << std::endl;
         return false;
     }
 
@@ -62,12 +62,12 @@ bool ThumbnailsJob::createOutputDirectory() const {
 
         if (!fs::exists(target_dir)) {
             fs::create_directories(target_dir);
-            std::cout << "Dossier créé : " << target_dir << std::endl;
+            std::cout << "Directory created: " << target_dir << std::endl;
         }
 
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Erreur lors de la création du dossier : " << e.what() << std::endl;
+        std::cerr << "Error creating directory: " << e.what() << std::endl;
         return false;
     }
 }
@@ -85,10 +85,14 @@ std::string ThumbnailsJob::getOutputPattern() const {
 
 std::string ThumbnailsJob::getFileExtension() const {
     switch (config_.format) {
-        case ThumbnailFormat::PNG: return ".png";
-        case ThumbnailFormat::TIFF: return ".tiff";
-        case ThumbnailFormat::JPEG: return ".jpg";
-        default: return ".png";
+        case ThumbnailFormat::PNG:
+            return ".png";
+        case ThumbnailFormat::TIFF:
+            return ".tiff";
+        case ThumbnailFormat::JPEG:
+            return ".jpg";
+        default:
+            return ".png";
     }
 }
 
@@ -100,30 +104,30 @@ std::string ThumbnailsJob::getSceneFilter() const {
 }
 
 // ============================================================================
-// CONSTRUCTION DE LA COMMANDE
+// COMMAND CONSTRUCTION
 // ============================================================================
 
 std::vector<std::string> ThumbnailsJob::buildCommand() const {
     std::vector<std::string> args;
 
-    // Options globales
+    // Global options
     args.push_back("-hide_banner");
     args.push_back("-i");
     args.push_back(config_.input_path);
 
-    // Scaling et conversion couleur
+    // Scaling and color conversion
     args.push_back("-sws_flags");
     args.push_back("spline+accurate_rnd+full_chroma_int");
 
-    // Filtre de détection de scènes + showinfo
+    // Scene detection filter + showinfo
     args.push_back("-vf");
     args.push_back(getSceneFilter());
 
-    // vsync vfr pour frame rate variable (éviter les duplications)
+    // vsync vfr for variable frame rate (avoid duplications)
     args.push_back("-vsync");
     args.push_back("vfr");
 
-    // Configuration selon le format
+    // Configuration according to format
     switch (config_.format) {
         case ThumbnailFormat::PNG:
             args.push_back("-color_trc");
@@ -185,7 +189,7 @@ std::vector<std::string> ThumbnailsJob::buildCommand() const {
             break;
     }
 
-    // Pattern de sortie
+    // Output pattern
     args.push_back(getOutputPattern());
 
     return args;
@@ -207,7 +211,7 @@ std::string ThumbnailsJob::getCommandString() const {
 }
 
 // ============================================================================
-// EXÉCUTION
+// EXECUTION
 // ============================================================================
 
 bool ThumbnailsJob::execute() {
@@ -216,19 +220,19 @@ bool ThumbnailsJob::execute() {
         return false;
     }
 
-    // Création du dossier
+    // Directory creation
     if (!createOutputDirectory()) {
         return false;
     }
 
-    // Construction de la commande
+    // Command construction
     auto args = buildCommand();
     
-    // Log de la commande
+    // Command log
     std::cout << "[INFO] Thumbnails extraction command: " << getCommandString() << std::endl;
     std::cout << "[INFO] Scene detection threshold: " << config_.scene_threshold << std::endl;
     
-    // Exécution via FFmpegProcess
+    // Execution via FFmpegProcess
     std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
     std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
     
@@ -236,13 +240,12 @@ bool ThumbnailsJob::execute() {
     bool success = ffmpeg.execute();
 
     if (success) {
-        std::cout << "[SUCCESS] Extraction de thumbnails terminée avec succès!" << std::endl;
-        std::cout << "[INFO] Thumbnails extraits dans : " << (config_.create_subfolder && !config_.subfolder_name.empty() 
-            ? (fs::path(config_.output_dir) / config_.subfolder_name).string() 
-            : config_.output_dir) << std::endl;
-        std::cout << "[INFO] Seules les images correspondant aux changements de scènes ont été extraites." << std::endl;
+        std::cout << "[SUCCESS] Thumbnails extraction completed successfully!" << std::endl;
+        std::cout << "[INFO] Thumbnails extracted in: " << (config_.create_subfolder && !config_.subfolder_name.empty() 
+            ? (fs::path(config_.output_dir) / config_.subfolder_name).string() : config_.output_dir) << std::endl;
+        std::cout << "[INFO] Only images corresponding to scene changes were extracted." << std::endl;
     } else {
-        std::cerr << "[ERROR] L'extraction de thumbnails a échoué!" << std::endl;
+        std::cerr << "[ERROR] Thumbnails extraction failed!" << std::endl;
     }
 
     return success;

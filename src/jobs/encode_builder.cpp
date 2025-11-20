@@ -4,7 +4,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 // ============================================================================
-// CONFIGURATION DE BASE
+// BASE CONFIGURATION
 // ============================================================================
 
 EncodeJobBuilder& EncodeJobBuilder::inputDir(const std::string& path) {
@@ -33,7 +33,7 @@ EncodeJobBuilder& EncodeJobBuilder::framerate(int fps) {
 }
 
 // ============================================================================
-// FORMAT DE CONTENEUR
+// CONTAINER FORMAT
 // ============================================================================
 
 EncodeJobBuilder& EncodeJobBuilder::format(ContainerFormat fmt) {
@@ -106,7 +106,7 @@ EncodeJobBuilder& EncodeJobBuilder::ffv1() {
 }
 
 // ============================================================================
-// PARAMÈTRES D'ENCODAGE
+// ENCODING PARAMETERS
 // ============================================================================
 
 EncodeJobBuilder& EncodeJobBuilder::quality(int crf) {

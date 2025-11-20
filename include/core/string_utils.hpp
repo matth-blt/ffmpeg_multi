@@ -6,9 +6,9 @@
 namespace StringUtils {
 
 /**
- * @brief Supprime les guillemets au début et à la fin d'une chaîne
- * @param str La chaîne à nettoyer
- * @return La chaîne sans guillemets
+ * @brief Removes quotes from the beginning and end of a string
+ * @param str The string to clean
+ * @return The string without quotes
  */
 inline std::string removeQuotes(const std::string& str) {
     std::string result = str;
@@ -25,9 +25,9 @@ inline std::string removeQuotes(const std::string& str) {
 }
 
 /**
- * @brief Supprime les espaces au début et à la fin d'une chaîne
- * @param str La chaîne à nettoyer
- * @return La chaîne sans espaces
+ * @brief Removes spaces from the beginning and end of a string
+ * @param str The string to clean
+ * @return The string without spaces
  */
 inline std::string trim(const std::string& str) {
     auto start = str.begin();
@@ -44,9 +44,9 @@ inline std::string trim(const std::string& str) {
 }
 
 /**
- * @brief Nettoie une chaîne (supprime guillemets et espaces)
- * @param str La chaîne à nettoyer
- * @return La chaîne nettoyée
+ * @brief Cleans a string (removes quotes and spaces)
+ * @param str The string to clean
+ * @return The cleaned string
  */
 inline std::string clean(const std::string& str) {
     return removeQuotes(trim(str));

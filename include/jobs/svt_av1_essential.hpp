@@ -8,27 +8,27 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 /**
- * @brief Job d'encodage avec SVT-AV1-Essential via Auto-Boost
+ * @brief Encoding job with SVT-AV1-Essential via Auto-Boost
  * 
- * Utilise Auto-Boost-Essential.py pour un encodage AV1 optimisé
- * avec gestion automatique de l'audio et du muxing final.
+ * Uses Auto-Boost-Essential.py for optimized AV1 encoding
+ * with automatic audio handling and final muxing.
  */
 class SvtAv1EssentialJob : public FFmpegMulti::Core::Job {
 public:
     enum class Quality {
-        LOW, // Rapide, qualité acceptable
-        MEDIUM, // Équilibré
-        HIGH // Lent, excellente qualité
+        LOW, // Fast, acceptable quality
+        MEDIUM, // Balanced
+        HIGH // Slow, excellent quality
     };
     
     struct Config {
         std::string input_path;
         std::string output_path;
         Quality quality{Quality::HIGH};
-        bool aggressive{false}; // Mode agressif (plus de compression)
-        bool unshackle{false}; // Libère les limites de vitesse
-        bool verbose{true}; // Affichage détaillé
-        bool cleanup{true}; // Nettoyage auto des fichiers temp
+        bool aggressive{false}; // Aggressive mode (more compression)
+        bool unshackle{false}; // Unshackle speed limits
+        bool verbose{true}; // Detailed output
+        bool cleanup{true}; // Auto cleanup of temp files
     };
     
     explicit SvtAv1EssentialJob(const std::string& input, const std::string& output);
@@ -60,11 +60,10 @@ private:
     std::filesystem::path getAviPath() const;
     std::filesystem::path getAudioPath() const;
     std::string buildABECommand() const;
-    std::filesystem::path getExternPath() const;
 };
 
 /**
- * @brief Builder pour SvtAv1EssentialJob
+ * @brief Builder for SvtAv1EssentialJob
  */
 class SvtAv1EssentialBuilder {
 public:

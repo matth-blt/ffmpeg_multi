@@ -48,7 +48,7 @@ ReencodeJobBuilder& ReencodeJobBuilder::svtav1() {
 
 ReencodeJobBuilder& ReencodeJobBuilder::prores() {
     config_.codec = Encode::Codec::ProRes;
-    // Paramètres par défaut pour ProRes 4444
+    // Default parameters for ProRes 4444
     config_.prores_profile = 4;
     config_.prores_vendor = "apl0";
     config_.bits_per_mb = 8000;
@@ -58,12 +58,12 @@ ReencodeJobBuilder& ReencodeJobBuilder::prores() {
 
 ReencodeJobBuilder& ReencodeJobBuilder::ffv1() {
     config_.codec = Encode::Codec::FFV1;
-    // Paramètres par défaut pour FFV1
+    // Default parameters for FFV1
     config_.ffv1_coder = 2;
     config_.ffv1_context = 1;
     config_.ffv1_level = 3;
     config_.ffv1_slices = 12;
-    config_.gop_size = 1; // Intra-only pour lossless
+    config_.gop_size = 1; // Intra-only for lossless
     return *this;
 }
 
@@ -107,7 +107,7 @@ ReencodeJobBuilder& ReencodeJobBuilder::bitrate(int kbps) {
 ReencodeJobBuilder& ReencodeJobBuilder::cbr(int kbps) {
     config_.rate_control = Encode::RateControl::CBR;
     config_.bitrate_kbps = kbps;
-    config_.buffer_size_kbps = kbps * 2; // Buffer = 2x bitrate par défaut
+    config_.buffer_size_kbps = kbps * 2; // Buffer = 2x bitrate by default
     return *this;
 }
 
@@ -461,14 +461,14 @@ void ReencodeJobBuilder::validate() const {
         throw std::runtime_error("Output path is required");
     }
     
-    // Validation du rate control
+    // Rate control validation
     if (config_.rate_control == Encode::RateControl::VBR || config_.rate_control == Encode::RateControl::CBR) {
         if (config_.bitrate_kbps <= 0) {
             throw std::runtime_error("Bitrate must be > 0 for VBR/CBR modes");
         }
     }
     
-    // Validation du quality pour CRF/CQP
+    // Quality validation for CRF/CQP
     if (config_.rate_control == Encode::RateControl::CRF || config_.rate_control == Encode::RateControl::CQP) {
         if (config_.quality < 0 || config_.quality > 51) {
             throw std::runtime_error("Quality/CRF value must be between 0 and 51");

@@ -15,18 +15,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Core
 set(CORE_SOURCES
     src/core/app.cpp
-    src/core/command.cpp
     src/core/ffmpeg_process.cpp
-    src/core/job.cpp
-    src/core/logger.cpp
     src/core/path_utils.cpp
     src/core/input.cpp
-)
-
-# CLI
-set(CLI_SOURCES
-    src/cli/cli_parser.cpp
-    src/cli/commands.cpp
 )
 
 # Jobs
@@ -43,13 +34,6 @@ set(JOBS_SOURCES
     src/jobs/probe.cpp
     src/jobs/thumbnails.cpp
     src/jobs/thumbnails_builder.cpp
-)
-
-# Pipelines
-set(PIPELINE_SOURCES
-    src/pipelines/pipeline_base.cpp
-    src/pipelines/pipeline_batch.cpp
-    src/pipelines/pipeline_custom.cpp
 )
 
 # Main
@@ -82,27 +66,6 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-# ============================================================================
-# Tests (optionnel)
-# ============================================================================
-option(BUILD_TESTS "Build tests" OFF)
-
-if(BUILD_TESTS)
-    enable_testing()
-    
-    add_executable(test_reencode tests/test_encode.cpp src/jobs/reencode.cpp src/jobs/reencode_builder.cpp)
-    target_include_directories(test_reencode PRIVATE ${HEADERS_DIR})
-    add_test(NAME test_reencode COMMAND test_reencode)
-    
-    add_executable(test_extract_frames tests/test_extract_frames.cpp src/jobs/extract_frames.cpp src/jobs/extract_frames_builder.cpp)
-    target_include_directories(test_extract_frames PRIVATE ${HEADERS_DIR})
-    add_test(NAME test_extract_frames COMMAND test_extract_frames)
-    
-    add_executable(test_pipeline_batch tests/test_pipeline_batch.cpp src/pipelines/pipeline_batch.cpp)
-    target_include_directories(test_pipeline_batch PRIVATE ${HEADERS_DIR})
-    add_test(NAME test_pipeline_batch COMMAND test_pipeline_batch)
 endif()
 
 # ============================================================================

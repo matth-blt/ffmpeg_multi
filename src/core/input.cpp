@@ -5,8 +5,7 @@
 #include <limits>
 
 namespace FFmpegMulti {
-
-    // Helper pour vérifier la commande de retour
+    // Helper to check for back command
     bool isBackCommand(const std::string& str) {
         return str == ":q" || str == ":Q";
     }
@@ -22,12 +21,12 @@ namespace FFmpegMulti {
             std::string line;
             std::getline(std::cin, line);
 
-            // Vérification commande retour
+            // Check back command
             if (isBackCommand(line)) {
                 throw BackException();
             }
 
-            // Nettoyage
+            // Cleanup
             std::string cleaned = StringUtils::clean(line);
 
             if (cleaned.empty() && !allowEmpty) {
@@ -44,7 +43,7 @@ namespace FFmpegMulti {
             try {
                 return std::stoi(str);
             } catch (...) {
-                std::cout << Colors::RED << "Veuillez entrer un nombre valide." << Colors::RESET << std::endl;
+                std::cout << Colors::RED << "Please enter a valid number." << Colors::RESET << std::endl;
             }
         }
     }
@@ -55,7 +54,7 @@ namespace FFmpegMulti {
             if (val >= min && val <= max) {
                 return val;
             }
-            std::cout << Colors::RED << "Veuillez entrer un nombre entre " << min << " et " << max << "." << Colors::RESET << std::endl;
+            std::cout << Colors::RED << "Please enter a number between " << min << " and " << max << "." << Colors::RESET << std::endl;
         }
     }
 
@@ -65,26 +64,26 @@ namespace FFmpegMulti {
             try {
                 return std::stof(str);
             } catch (...) {
-                std::cout << Colors::RED << "Veuillez entrer un nombre décimal valide." << Colors::RESET << std::endl;
+                std::cout << Colors::RED << "Please enter a valid decimal number." << Colors::RESET << std::endl;
             }
         }
     }
 
     bool Input::getConfirm(const std::string& prompt) {
         while (true) {
-            std::cout << Colors::PEACH << "? " << prompt << " (o/n) : " << Colors::RESET;
+            std::cout << Colors::PEACH << "? " << prompt << " (y/n) : " << Colors::RESET;
             std::string line;
             std::getline(std::cin, line);
 
             if (isBackCommand(line)) throw BackException();
 
-            if (line == "o" || line == "O") return true;
+            if (line == "y" || line == "Y") return true;
             if (line == "n" || line == "N") return false;
         }
     }
     
     void Input::wait() {
-        std::cout << Colors::DIM << "Appuyez sur Entrée pour continuer..." << Colors::RESET;
+        std::cout << Colors::DIM << "Press Enter to continue..." << Colors::RESET;
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 }

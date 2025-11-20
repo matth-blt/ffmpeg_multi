@@ -65,14 +65,11 @@ ThumbnailsBuilder& ThumbnailsBuilder::jpeg() {
 // ============================================================================
 
 ThumbnailsJob ThumbnailsBuilder::build() const {
-    // Validation de base
-    if (config_.input_path.empty()) {
+    // Basic validation
+    if (config_.input_path.empty())
         throw std::invalid_argument("Input path is required");
-    }
-    
-    if (config_.output_dir.empty()) {
+    if (config_.output_dir.empty())
         throw std::invalid_argument("Output directory is required");
-    }
     
     return ThumbnailsJob(config_);
 }

@@ -8,7 +8,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 /**
- * @brief Format d'image pour les thumbnails
+ * @brief Image format for thumbnails
  */
 enum class ThumbnailFormat {
     PNG,
@@ -17,7 +17,7 @@ enum class ThumbnailFormat {
 };
 
 /**
- * @brief Configuration pour l'extraction de thumbnails avec détection de scènes
+ * @brief Configuration for thumbnail extraction with scene detection
  */
 struct ThumbnailsConfig {
     std::string input_path;
@@ -29,10 +29,10 @@ struct ThumbnailsConfig {
 };
 
 /**
- * @brief Job d'extraction de thumbnails avec détection de scènes
+ * @brief Thumbnail extraction job with scene detection
  * 
- * Ce job extrait automatiquement des thumbnails uniquement lors des changements de scènes,
- * évitant ainsi les images dupliquées ou très similaires.
+ * This job automatically extracts thumbnails only at scene changes,
+ * avoiding duplicate or very similar images.
  */
 class ThumbnailsJob : public FFmpegMulti::Core::Job {
 public:
@@ -44,10 +44,10 @@ public:
     ThumbnailsConfig& config();
     const ThumbnailsConfig& config() const;
 
-    // Exécution
+    // Execution
     bool execute() override;
 
-    // Construction de la commande
+    // Command construction
     std::vector<std::string> buildCommand() const;
     std::string getCommandString() const;
 
@@ -63,7 +63,7 @@ private:
 };
 
 /**
- * @brief Builder pour ThumbnailsJob
+ * @brief Builder for ThumbnailsJob
  */
 class ThumbnailsBuilder {
 public:

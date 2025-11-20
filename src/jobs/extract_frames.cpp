@@ -12,7 +12,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 // ============================================================================
-// CONSTRUCTEURS
+// CONSTRUCTORS
 // ============================================================================
 
 ExtractFramesJob::ExtractFramesJob(const ExtractFramesConfig& config) : config_(config) {}
@@ -39,12 +39,12 @@ const ExtractFramesConfig& ExtractFramesJob::config() const {
 
 bool ExtractFramesJob::validatePaths() const {
     if (!fs::exists(config_.input_path)) {
-        std::cerr << "Erreur : Le fichier d'entrée n'existe pas : " << config_.input_path << std::endl;
+        std::cerr << "Error: Input file does not exist: " << config_.input_path << std::endl;
         return false;
     }
 
     if (config_.output_dir.empty()) {
-        std::cerr << "Erreur : Le dossier de sortie n'est pas défini." << std::endl;
+        std::cerr << "Error: Output directory is not defined." << std::endl;
         return false;
     }
 
@@ -61,12 +61,12 @@ bool ExtractFramesJob::createOutputDirectory() const {
 
         if (!fs::exists(target_dir)) {
             fs::create_directories(target_dir);
-            std::cout << "Dossier créé : " << target_dir << std::endl;
+            std::cout << "Directory created: " << target_dir << std::endl;
         }
 
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Erreur lors de la création du dossier : " << e.what() << std::endl;
+        std::cerr << "Error creating directory: " << e.what() << std::endl;
         return false;
     }
 }
@@ -84,30 +84,34 @@ std::string ExtractFramesJob::getOutputPattern() const {
 
 std::string ExtractFramesJob::getFileExtension() const {
     switch (config_.format) {
-        case ImageFormat::PNG: return ".png";
-        case ImageFormat::TIFF: return ".tiff";
-        case ImageFormat::JPEG: return ".jpg";
-        default: return ".png";
+        case ImageFormat::PNG:
+            return ".png";
+        case ImageFormat::TIFF:
+            return ".tiff";
+        case ImageFormat::JPEG:
+            return ".jpg";
+        default:
+            return ".png";
     }
 }
 
 // ============================================================================
-// CONSTRUCTION DE LA COMMANDE
+// COMMAND CONSTRUCTION
 // ============================================================================
 
 std::vector<std::string> ExtractFramesJob::buildCommand() const {
     std::vector<std::string> args;
 
-    // Options globales
+    // Global options
     args.push_back("-hide_banner");
     args.push_back("-i");
     args.push_back(config_.input_path);
 
-    // Scaling et conversion couleur
+    // Scaling and color conversion
     args.push_back("-sws_flags");
     args.push_back("spline+accurate_rnd+full_chroma_int");
 
-    // Configuration selon le format
+    // Configuration according to format
     switch (config_.format) {
         case ImageFormat::PNG:
             args.push_back("-color_trc");
@@ -169,7 +173,7 @@ std::vector<std::string> ExtractFramesJob::buildCommand() const {
             break;
     }
 
-    // Pattern de sortie
+    // Output pattern
     args.push_back(getOutputPattern());
 
     return args;
@@ -191,27 +195,24 @@ std::string ExtractFramesJob::getCommandString() const {
 }
 
 // ============================================================================
-// EXÉCUTION
+// EXECUTION
 // ============================================================================
 
 bool ExtractFramesJob::execute() {
     // Validation
-    if (!validatePaths()) {
+    if (!validatePaths())
         return false;
-    }
-
-    // Création du dossier
-    if (!createOutputDirectory()) {
+    // Create directory
+    if (!createOutputDirectory())
         return false;
-    }
 
-    // Construction de la commande
+    // Build command
     auto args = buildCommand();
     
-    // Log de la commande (comme dans reencode.cpp)
+    // Log command (like in reencode.cpp)
     std::cout << "[INFO] Extract frames command: " << getCommandString() << std::endl;
     
-    // Exécution via FFmpegProcess
+    // Execution via FFmpegProcess
     std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
     std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
     
@@ -219,12 +220,11 @@ bool ExtractFramesJob::execute() {
     bool success = ffmpeg.execute();
 
     if (success) {
-        std::cout << "[SUCCESS] Extraction terminée avec succès!" << std::endl;
-        std::cout << "[INFO] Frames extraites dans : " << (config_.create_subfolder && !config_.subfolder_name.empty() 
-            ? (fs::path(config_.output_dir) / config_.subfolder_name).string() 
-            : config_.output_dir) << std::endl;
+        std::cout << "[SUCCESS] Extraction completed successfully!" << std::endl;
+        std::cout << "[INFO] Frames extracted to: " << (config_.create_subfolder && !config_.subfolder_name.empty() 
+        ? (fs::path(config_.output_dir) / config_.subfolder_name).string() : config_.output_dir) << std::endl;
     } else {
-        std::cerr << "[ERROR] L'extraction a échoué!" << std::endl;
+        std::cerr << "[ERROR] Extraction failed!" << std::endl;
     }
 
     return success;

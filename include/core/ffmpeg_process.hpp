@@ -14,12 +14,12 @@ public:
     std::vector<std::string> getArgs();
     
     /**
-     * @brief Execute la commande FFmpeg avec les arguments
-     * @return true si l'exécution a réussi, false sinon
+     * @brief Execute the FFmpeg command with arguments
+     * @return true if execution succeeded, false otherwise
      */
     bool execute();
     
 private:
-    std::filesystem::path ExecutablePath{"./extern/ffmpeg.exe"};
+    std::filesystem::path ExecutablePath;
     std::vector<std::string> args;
 };

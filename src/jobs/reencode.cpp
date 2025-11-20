@@ -10,7 +10,7 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 // ============================================================================
-// CONSTRUCTEURS
+// CONSTRUCTORS
 // ============================================================================
 
 ReencodeJob::ReencodeJob(const std::string& input_path, const std::string& output_path): input_path_(input_path), output_path_(output_path) {}
@@ -32,7 +32,7 @@ const Encode::EncodeConfig& ReencodeJob::config() const {
 }
 
 // ============================================================================
-// CHEMINS I/O
+// I/O PATHS
 // ============================================================================
 
 void ReencodeJob::setInputPath(const std::string& path) { 
@@ -52,14 +52,14 @@ std::string ReencodeJob::getOutputPath() const {
 }
 
 // ============================================================================
-// CONSTRUCTION DE LA COMMANDE
+// COMMAND CONSTRUCTION
 // ============================================================================
 
 std::vector<std::string> ReencodeJob::buildCommand() const {
     std::vector<std::string> args;
     
-    // Ordre FFmpeg standard :
-    // [options globales] -i input [options video] [options audio] output
+    // Standard FFmpeg order:
+    // [global options] -i input [video options] [audio options] output
     
     addInputArgs(args);
     addVideoCodecArgs(args);
@@ -70,7 +70,7 @@ std::vector<std::string> ReencodeJob::buildCommand() const {
     addHDRMetadata(args);
     addAudioArgs(args);
     
-    // Extra arguments personnalisés
+    // Custom extra arguments
     for (const auto& extra : config_.extra_args) {
         args.push_back(extra);
     }
@@ -96,7 +96,7 @@ std::string ReencodeJob::getCommandString() const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - INPUT
+// ADD ARGUMENTS - INPUT
 // ============================================================================
 
 void ReencodeJob::addInputArgs(std::vector<std::string>& args) const {
@@ -105,14 +105,14 @@ void ReencodeJob::addInputArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - VIDEO CODEC
+// ADD ARGUMENTS - VIDEO CODEC
 // ============================================================================
 
 void ReencodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
     args.push_back("-c:v");
     args.push_back(getEncoderName());
     
-    // Paramètres spécifiques à ProRes
+    // ProRes specific parameters
     if (config_.codec == Encode::Codec::ProRes) {
         args.push_back("-profile:v");
         args.push_back(std::to_string(config_.prores_profile));
@@ -124,7 +124,7 @@ void ReencodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
         args.push_back(std::to_string(config_.bits_per_mb));
     }
     
-    // Paramètres spécifiques à FFV1
+    // FFV1 specific parameters
     if (config_.codec == Encode::Codec::FFV1) {
         args.push_back("-coder");
         args.push_back(std::to_string(config_.ffv1_coder));
@@ -139,13 +139,13 @@ void ReencodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
         args.push_back(std::to_string(config_.ffv1_slices));
     }
     
-    // Paramètres spécifiques à x264
+    // x264 specific parameters
     if (config_.codec == Encode::Codec::X264 && !config_.x264_params.empty()) {
         args.push_back("-x264-params");
         args.push_back(config_.x264_params);
     }
     
-    // Paramètres spécifiques à NVENC
+    // NVENC specific parameters
     if (config_.codec == Encode::Codec::H264_NVENC || config_.codec == Encode::Codec::H265_NVENC) {
         args.push_back("-b_adapt");
         args.push_back(std::to_string(config_.b_adapt));
@@ -166,7 +166,7 @@ void ReencodeJob::addVideoCodecArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - RATE CONTROL
+// ADD ARGUMENTS - RATE CONTROL
 // ============================================================================
 
 void ReencodeJob::addRateControlArgs(std::vector<std::string>& args) const {
@@ -204,7 +204,7 @@ void ReencodeJob::addRateControlArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - ENCODING PARAMETERS
+// ADD ARGUMENTS - ENCODING PARAMETERS
 // ============================================================================
 
 void ReencodeJob::addEncodingParams(std::vector<std::string>& args) const {
@@ -238,7 +238,7 @@ void ReencodeJob::addEncodingParams(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - PIXEL FORMAT
+// ADD ARGUMENTS - PIXEL FORMAT
 // ============================================================================
 
 void ReencodeJob::addPixelFormatArgs(std::vector<std::string>& args) const {
@@ -247,12 +247,12 @@ void ReencodeJob::addPixelFormatArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - COLOR SPACE
+// ADD ARGUMENTS - COLOR SPACE
 // ============================================================================
 
 void ReencodeJob::addColorSpaceArgs(std::vector<std::string>& args) const {
     if (config_.passthrough_color) {
-        return; // Conserver l'espace colorimétrique d'entrée
+        return; // Keep input color space
     }
     
     // Range
@@ -272,7 +272,7 @@ void ReencodeJob::addColorSpaceArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - HDR METADATA
+// ADD ARGUMENTS - HDR METADATA
 // ============================================================================
 
 void ReencodeJob::addHDRMetadata(std::vector<std::string>& args) const {
@@ -300,7 +300,7 @@ void ReencodeJob::addHDRMetadata(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - AUDIO
+// ADD ARGUMENTS - AUDIO
 // ============================================================================
 
 void ReencodeJob::addAudioArgs(std::vector<std::string>& args) const {
@@ -325,7 +325,7 @@ void ReencodeJob::addAudioArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// AJOUT DES ARGUMENTS - OUTPUT
+// ADD ARGUMENTS - OUTPUT
 // ============================================================================
 
 void ReencodeJob::addOutputArgs(std::vector<std::string>& args) const {
@@ -333,21 +333,20 @@ void ReencodeJob::addOutputArgs(std::vector<std::string>& args) const {
 }
 
 // ============================================================================
-// HELPERS - CONVERSION CODEC
+// HELPERS - CODEC CONVERSION
 // ============================================================================
 
 std::string ReencodeJob::getEncoderName() const {
-    // Si un encodeur personnalisé est spécifié, l'utiliser
-    if (!config_.encoder_override.empty()) {
+    // If a custom encoder is specified, use it
+    if (!config_.encoder_override.empty())
         return config_.encoder_override;
-    }
     
-    // Sinon, mapper selon le codec
+    // Otherwise, map according to codec
     return Codec::CodecUtils::getEncoderName(config_.codec);
 }
 
 // ============================================================================
-// HELPERS - CONVERSION PIXEL FORMAT
+// HELPERS - PIXEL FORMAT CONVERSION
 // ============================================================================
 
 std::string ReencodeJob::getPixelFormatString() const {
@@ -378,7 +377,7 @@ std::string ReencodeJob::getPixelFormatString() const {
 }
 
 // ============================================================================
-// HELPERS - CONVERSION COLOR SPACE
+// HELPERS - COLOR SPACE CONVERSION
 // ============================================================================
 
 std::string ReencodeJob::getColorRangeString() const {
@@ -440,26 +439,21 @@ std::string ReencodeJob::getColorMatrixString() const {
 // ============================================================================
 
 bool ReencodeJob::validate() const {
-    if (input_path_.empty()) {
+    if (input_path_.empty())
         throw std::runtime_error("Input path is empty");
-    }
-    
-    if (output_path_.empty()) {
+    if (output_path_.empty())
         throw std::runtime_error("Output path is empty");
-    }
     
-    if (config_.rate_control == Encode::RateControl::VBR || 
-        config_.rate_control == Encode::RateControl::CBR) {
-        if (config_.bitrate_kbps <= 0) {
+    if (config_.rate_control == Encode::RateControl::VBR || config_.rate_control == Encode::RateControl::CBR) {
+        if (config_.bitrate_kbps <= 0)
             throw std::runtime_error("Bitrate must be > 0 for VBR/CBR modes");
-        }
     }
     
     return true;
 }
 
 // ============================================================================
-// EXÉCUTION
+// EXECUTION
 // ============================================================================
 
 bool ReencodeJob::execute() {
@@ -467,25 +461,24 @@ bool ReencodeJob::execute() {
         // Validation
         validate();
         
-        // Construction de la commande
+        // Build command
         auto args = buildCommand();
         
-        // Log de la commande
+        // Log command
         std::cout << "[INFO] Encode command: " << getCommandString() << std::endl;
         
-        // Exécution via FFmpegProcess avec chemin absolu
+        // Execution via FFmpegProcess with absolute path
         std::filesystem::path extern_path = FFmpegMulti::PathUtils::getExternPath();
         std::filesystem::path ffmpeg_path = extern_path / "ffmpeg.exe";
         ffmpegProcess process(ffmpeg_path, args);
         
-        // Exécuter réellement la commande
+        // Actually execute the command
         bool success = process.execute();
         
-        if (success) {
-            std::cout << "[SUCCESS] Encodage terminé avec succès!" << std::endl;
-        } else {
-            std::cerr << "[ERROR] L'encodage a échoué!" << std::endl;
-        }
+        if (success)
+            std::cout << "[SUCCESS] Encoding finished successfully!" << std::endl;
+        else
+            std::cerr << "[ERROR] Encoding failed!" << std::endl;
         
         return success;
         

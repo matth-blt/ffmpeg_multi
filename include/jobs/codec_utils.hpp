@@ -8,7 +8,7 @@ namespace FFmpegMulti {
 namespace Codec {
 
 /**
- * @brief Utilitaires partagés pour la gestion des codecs
+ * @brief Shared utilities for codec management
  */
 class CodecUtils {
 public:
@@ -17,94 +17,72 @@ public:
     // ========================================================================
     
     /**
-     * @brief Récupère le nom de l'encodeur FFmpeg correspondant au codec
-     * @param codec Type de codec
-     * @param encoder_override Encodeur personnalisé (optionnel)
-     * @return Nom de l'encodeur FFmpeg
+     * @brief Gets the FFmpeg encoder name corresponding to the codec
+     * @param codec Codec type
+     * @param encoder_override Custom encoder (optional)
+     * @return FFmpeg encoder name
      */
-    static std::string getEncoderName(
-        Encode::Codec codec, 
-        const std::string& encoder_override = ""
-    );
+    static std::string getEncoderName(Encode::Codec codec, const std::string& encoder_override = "");
     
     // ========================================================================
     // CODEC ARGUMENTS
     // ========================================================================
     
     /**
-     * @brief Ajoute les arguments spécifiques au codec dans le vecteur d'args
-     * @param args Vecteur d'arguments FFmpeg à remplir
-     * @param codec Type de codec
-     * @param quality Valeur de qualité (CRF/QP)
-     * @param preset Preset d'encodage
+     * @brief Adds codec-specific arguments to the args vector
+     * @param args FFmpeg arguments vector to fill
+     * @param codec Codec type
+     * @param quality Quality value (CRF/QP)
+     * @param preset Encoding preset
      */
-    static void addCodecArgs(
-        std::vector<std::string>& args,
-        Encode::Codec codec,
-        int quality,
-        const std::string& preset
-    );
+    static void addCodecArgs(std::vector<std::string>& args, Encode::Codec codec, int quality, const std::string& preset);
     
     /**
-     * @brief Ajoute les arguments pour ProRes
+     * @brief Adds arguments for ProRes
      */
-    static void addProResArgs(
-        std::vector<std::string>& args,
-        int profile = 4,
-        const std::string& vendor = "apl0",
-        int bits_per_mb = 8000
-    );
+    static void addProResArgs(std::vector<std::string>& args, int profile = 4, const std::string& vendor = "apl0", int bits_per_mb = 8000);
     
     /**
-     * @brief Ajoute les arguments pour FFV1
+     * @brief Adds arguments for FFV1
      */
-    static void addFFV1Args(
-        std::vector<std::string>& args,
-        int level = 3,
-        int coder = 1,
-        int context = 1,
-        int slices = 24
-    );
+    static void addFFV1Args(std::vector<std::string>& args, int level = 3, int coder = 1, int context = 1, int slices = 24);
     
     // ========================================================================
     // CONTAINER UTILS
     // ========================================================================
     
     /**
-     * @brief Récupère l'extension du fichier selon le format de conteneur
-     * @param format Format de conteneur (MKV, MP4, WEBM, MOV)
-     * @return Extension avec le point (ex: ".mkv")
+     * @brief Gets the file extension according to the container format
+     * @param format Container format (MKV, MP4, WEBM, MOV)
+     * @return Extension with dot (e.g., ".mkv")
      */
     static std::string getContainerExtension(const std::string& container);
     
     /**
-     * @brief Vérifie si un codec est compatible avec un conteneur
-     * @param codec Type de codec
-     * @param container Format de conteneur
-     * @return true si compatible, false sinon
+     * @brief Checks if a codec is compatible with a container
+     * @param codec Codec type
+     * @param container Container format
+     * @return true if compatible, false otherwise
      */
-    static bool isCodecCompatibleWithContainer(
-        Encode::Codec codec, 
-        const std::string& container
-    );
+    static bool isCodecCompatibleWithContainer(Encode::Codec codec, const std::string& container);
     
     // ========================================================================
     // VALIDATION
     // ========================================================================
     
     /**
-     * @brief Valide les paramètres de qualité selon le codec
-     * @param codec Type de codec
-     * @param quality Valeur de qualité
-     * @return true si valide, false sinon
+     * @brief Validates quality parameters according to the codec
+     * @param codec Codec type
+     * @param quality Quality value
+     * @return true if valid, false otherwise
      */
     static bool validateQuality(Encode::Codec codec, int quality);
     
     /**
-     * @brief Valide le preset selon le codec
-     * @param codec Type de codec
-     * @param preset Preset d'encodage
-     * @return true si valide, false sinon
+     * @brief Validates the preset according to the codec
+     * @param codec Codec type
+     * @param preset Encoding preset
+     * @return true if valid, false otherwise
      */
     static bool validatePreset(Encode::Codec codec, const std::string& preset);
 };

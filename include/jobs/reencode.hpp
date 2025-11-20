@@ -10,24 +10,24 @@ namespace FFmpegMulti {
 namespace Jobs {
 
 /**
- * @brief Job de réencodage vidéo avec FFmpeg
+ * @brief Video re-encoding job with FFmpeg
  * 
- * Cette classe représente un job de réencodage complet :
- * - Configuration des paramètres de réencodage
- * - Construction de la ligne de commande FFmpeg
- * - Exécution du réencodage
+ * This class represents a complete re-encoding job:
+ * - Configuration of re-encoding parameters
+ * - Construction of the FFmpeg command line
+ * - Execution of the re-encoding
  */
 class ReencodeJob : public FFmpegMulti::Core::Job {
 public:
     /**
-     * @brief Constructeur avec chemins d'entrée et de sortie
-     * @param input_path Chemin du fichier d'entrée
-     * @param output_path Chemin du fichier de sortie
+     * @brief Constructor with input and output paths
+     * @param input_path Input file path
+     * @param output_path Output file path
      */
     explicit ReencodeJob(const std::string& input_path, const std::string& output_path);
     
     /**
-     * @brief Constructeur par défaut
+     * @brief Default constructor
      */
     ReencodeJob() = default;
     
@@ -38,25 +38,25 @@ public:
     // ========================================================================
     
     /**
-     * @brief Définit la configuration d'encodage complète
-     * @param config Configuration à appliquer
+     * @brief Sets the complete encoding configuration
+     * @param config Configuration to apply
      */
     void setConfig(const Encode::EncodeConfig& config);
     
     /**
-     * @brief Récupère la configuration actuelle (modifiable)
-     * @return Référence vers la configuration
+     * @brief Gets the current configuration (modifiable)
+     * @return Reference to the configuration
      */
     Encode::EncodeConfig& config();
     
     /**
-     * @brief Récupère la configuration actuelle (lecture seule)
-     * @return Référence const vers la configuration
+     * @brief Gets the current configuration (read-only)
+     * @return Const reference to the configuration
      */
     const Encode::EncodeConfig& config() const;
     
     // ========================================================================
-    // CHEMINS D'ENTRÉE/SORTIE
+    // I/O PATHS
     // ========================================================================
     
     void setInputPath(const std::string& path);
@@ -66,35 +66,35 @@ public:
     std::string getOutputPath() const;
     
     // ========================================================================
-    // CONSTRUCTION DE LA COMMANDE
+    // COMMAND CONSTRUCTION
     // ========================================================================
     
     /**
-     * @brief Construit les arguments de la ligne de commande FFmpeg
-     * @return Vecteur d'arguments prêts pour l'exécution
+     * @brief Builds the FFmpeg command line arguments
+     * @return Vector of arguments ready for execution
      */
     std::vector<std::string> buildCommand() const;
     
     /**
-     * @brief Génère la commande complète sous forme de chaîne (pour debug)
-     * @return Commande FFmpeg complète
+     * @brief Generates the complete command as a string (for debug)
+     * @return Complete FFmpeg command
      */
     std::string getCommandString() const;
     
     // ========================================================================
-    // EXÉCUTION
+    // EXECUTION
     // ========================================================================
     
     /**
-     * @brief Exécute l'encodage avec la configuration actuelle
-     * @return true si l'encodage a réussi, false sinon
+     * @brief Executes the encoding with the current configuration
+     * @return true if encoding succeeded, false otherwise
      */
     bool execute() override;
     
     /**
-     * @brief Valide la configuration avant exécution
-     * @return true si la configuration est valide
-     * @throw std::runtime_error si la configuration est invalide
+     * @brief Validates the configuration before execution
+     * @return true if the configuration is valid
+     * @throw std::runtime_error if the configuration is invalid
      */
     bool validate() const;
 
@@ -104,7 +104,7 @@ private:
     Encode::EncodeConfig config_{};
     
     // ========================================================================
-    // MÉTHODES PRIVÉES DE CONSTRUCTION DE COMMANDE
+    // PRIVATE COMMAND CONSTRUCTION METHODS
     // ========================================================================
     
     void addInputArgs(std::vector<std::string>& args) const;
@@ -118,7 +118,7 @@ private:
     void addOutputArgs(std::vector<std::string>& args) const;
     
     // ========================================================================
-    // HELPERS DE CONVERSION
+    // CONVERSION HELPERS
     // ========================================================================
     
     std::string getEncoderName() const;

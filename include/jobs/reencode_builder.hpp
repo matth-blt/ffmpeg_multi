@@ -89,7 +89,7 @@ public:
     ReencodeJobBuilder& audioSampleRate(int hz);
     ReencodeJobBuilder& audioChannels(int channels);
     
-    // === Presets Complets ===
+    // === Complete Presets ===
     ReencodeJobBuilder& youtubePreset();
     ReencodeJobBuilder& x264Preset(); // x264 high quality preset
     ReencodeJobBuilder& x265Preset(); // x265 high quality preset
@@ -103,7 +103,7 @@ public:
     ReencodeJobBuilder& extraArgs(const std::vector<std::string>& args);
     ReencodeJobBuilder& addExtraArg(const std::string& arg);
     
-    // === Construction Finale ===
+    // === Final Construction ===
     ReencodeJob build();
     
 private:

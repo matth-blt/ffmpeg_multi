@@ -4,15 +4,15 @@ namespace FFmpegMulti {
 namespace Core {
 
 /**
- * @brief Interface de base pour tous les jobs
+ * @brief Base interface for all jobs
  */
 class Job {
 public:
     virtual ~Job() = default;
 
     /**
-     * @brief Exécute le job
-     * @return true si le job a réussi, false sinon
+     * @brief Executes the job
+     * @return true if the job succeeded, false otherwise
      */
     virtual bool execute() = 0;
 };
